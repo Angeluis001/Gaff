@@ -178,17 +178,96 @@
 
 ## Traceability
 
-*(Populated by roadmapper agent)*
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| — | — | — |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Pending |
+| INFRA-05 | Phase 1 | Pending |
+| INFRA-06 | Phase 1 | Pending |
+| INTG-07 | Phase 1 | Pending |
+| INTG-08 | Phase 1 | Pending |
+| LAND-01 | Phase 2 | Pending |
+| LAND-02 | Phase 2 | Pending |
+| LAND-03 | Phase 2 | Pending |
+| LAND-04 | Phase 2 | Pending |
+| LAND-05 | Phase 2 | Pending |
+| LAND-06 | Phase 2 | Pending |
+| LAND-07 | Phase 2 | Pending |
+| LAND-08 | Phase 2 | Pending |
+| LAND-09 | Phase 2 | Pending |
+| LAND-10 | Phase 2 | Pending |
+| PERF-01 | Phase 2 | Pending |
+| PERF-02 | Phase 2 | Pending |
+| PERF-03 | Phase 2 | Pending |
+| PERF-04 | Phase 2 | Pending |
+| SEO-01 | Phase 2 | Pending |
+| SEO-02 | Phase 2 | Pending |
+| SEO-03 | Phase 2 | Pending |
+| SEO-04 | Phase 2 | Pending |
+| INTG-03 | Phase 2 | Pending |
+| INTG-06 | Phase 2 | Pending |
+| BOOK-01 | Phase 3 | Pending |
+| BOOK-02 | Phase 3 | Pending |
+| BOOK-03 | Phase 3 | Pending |
+| BOOK-04 | Phase 3 | Pending |
+| BOOK-05 | Phase 3 | Pending |
+| BOOK-06 | Phase 3 | Pending |
+| BOOK-07 | Phase 3 | Pending |
+| INTG-01 | Phase 3 | Pending |
+| INTG-02 | Phase 3 | Pending |
+| AUTH-01 | Phase 4 | Pending |
+| AUTH-02 | Phase 4 | Pending |
+| AUTH-03 | Phase 4 | Pending |
+| ADMN-01 | Phase 4 | Pending |
+| ADMN-02 | Phase 4 | Pending |
+| ADMN-03 | Phase 4 | Pending |
+| ADMN-04 | Phase 4 | Pending |
+| ADMN-05 | Phase 4 | Pending |
+| ADMN-06 | Phase 4 | Pending |
+| ADMN-07 | Phase 4 | Pending |
+| ADMN-08 | Phase 4 | Pending |
+| ADMN-09 | Phase 4 | Pending |
+| ADMN-10 | Phase 4 | Pending |
+| CHAT-01 | Phase 5 | Pending |
+| CHAT-02 | Phase 5 | Pending |
+| CHAT-03 | Phase 5 | Pending |
+| CHAT-04 | Phase 5 | Pending |
+| LEAD-01 | Phase 5 | Pending |
+| LEAD-02 | Phase 5 | Pending |
+| LEAD-03 | Phase 5 | Pending |
+| LEAD-04 | Phase 5 | Pending |
+| LEAD-05 | Phase 5 | Pending |
+| LEAD-06 | Phase 5 | Pending |
+| CRM-01 | Phase 6 | Pending |
+| CRM-02 | Phase 6 | Pending |
+| CRM-03 | Phase 6 | Pending |
+| CRM-04 | Phase 6 | Pending |
+| CRM-05 | Phase 6 | Pending |
+| REVW-01 | Phase 6 | Pending |
+| REVW-02 | Phase 6 | Pending |
+| REVW-03 | Phase 6 | Pending |
+| SEOAG-01 | Phase 7 | Pending |
+| SEOAG-02 | Phase 7 | Pending |
+| SEOAG-03 | Phase 7 | Pending |
+| SEOAG-04 | Phase 7 | Pending |
+| MKTG-01 | Phase 7 | Pending |
+| MKTG-02 | Phase 7 | Pending |
+| MKTG-03 | Phase 7 | Pending |
+| MKTG-04 | Phase 7 | Pending |
+| INTG-04 | Phase 7 | Pending |
+| INTG-05 | Phase 7 | Pending |
+| ANLX-01 | Phase 8 | Pending |
+| ANLX-02 | Phase 8 | Pending |
+| ANLX-03 | Phase 8 | Pending |
+| ANLX-04 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 57 total
-- Mapped to phases: 0
-- Unmapped: 57 ⚠️
+- v1 requirements: 82 total
+- Mapped to phases: 82
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-13*
-*Last updated: 2026-04-13 after initial definition*
+*Last updated: 2026-04-13 after roadmap creation — traceability populated*
