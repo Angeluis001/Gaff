@@ -4,7 +4,11 @@ import { useEffect } from "react"
 import Script from "next/script"
 import { GoogleAnalytics } from "@next/third-parties/google"
 
-import { trackBookingStarted, trackPageView } from "@/lib/analytics"
+import {
+  trackBookingCompleted,
+  trackBookingStarted,
+  trackPageView,
+} from "@/lib/analytics"
 
 declare global {
   interface Window {
@@ -36,10 +40,21 @@ export function AnalyticsScripts() {
       trackBookingStarted(detail)
     }
 
+    const handleBookingCompleted = (event: Event) => {
+      const detail = (event as CustomEvent).detail as {
+        bookingId: string
+        sessionId: string
+      }
+
+      trackBookingCompleted(detail)
+    }
+
     window.addEventListener("gaff:booking-started", handleBookingStarted)
+    window.addEventListener("gaff:booking-completed", handleBookingCompleted)
 
     return () => {
       window.removeEventListener("gaff:booking-started", handleBookingStarted)
+      window.removeEventListener("gaff:booking-completed", handleBookingCompleted)
     }
   }, [])
 

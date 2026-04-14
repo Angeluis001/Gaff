@@ -1,11 +1,16 @@
-import { Ratelimit } from '@upstash/ratelimit';
-import { redis } from './redis';
+import { Ratelimit } from "@upstash/ratelimit"
+import { redis } from "./redis"
 
-// Default rate limit: 10 requests per 10 seconds per IP
-// Apply this limiter in Phase 3+ booking and lead API routes
-export const ratelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, '10 s'),
-  analytics: true,
-  prefix: 'gaff:ratelimit',
-});
+const hasRedisConfig = Boolean(
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+)
+
+// Booking routes should stay usable in local/dev even before Upstash is configured.
+export const ratelimit = hasRedisConfig
+  ? new Ratelimit({
+      redis: redis!,
+      limiter: Ratelimit.slidingWindow(10, "10 s"),
+      analytics: true,
+      prefix: "gaff:ratelimit",
+    })
+  : null

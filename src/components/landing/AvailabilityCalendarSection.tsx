@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { CalendarSync, LoaderCircle } from "lucide-react"
 
@@ -35,6 +36,7 @@ function toDate(value: string) {
 }
 
 export function AvailabilityCalendarSection() {
+  const router = useRouter()
   const { messages } = useLanguage()
   const [payload, setPayload] = useState<AvailabilityResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -262,10 +264,10 @@ export function AvailabilityCalendarSection() {
         <DialogContent className="border border-gold/12 bg-navy text-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading text-3xl text-white">
-              Booking shell ready
+              Booking flow ready
             </DialogTitle>
             <DialogDescription className="text-sand/72">
-              Phase 3 will replace this placeholder with the full booking form and checkout flow.
+              Continue into the real booking flow with your selected date and boat.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-[1.5rem] border border-gold/10 bg-white/3 p-5 text-sm leading-7 text-sand/76">
@@ -289,7 +291,23 @@ export function AvailabilityCalendarSection() {
             <Button
               type="button"
               className="rounded-full bg-gold text-navy hover:bg-gold/90"
-              onClick={() => setDialogOpen(false)}
+              onClick={() => {
+                if (!selectedDate) {
+                  setDialogOpen(false)
+                  return
+                }
+
+                const query = new URLSearchParams({
+                  date: format(selectedDate, "yyyy-MM-dd"),
+                })
+
+                if (selectedBoat !== "all") {
+                  query.set("boat", selectedBoat)
+                }
+
+                setDialogOpen(false)
+                router.push(`/booking?${query.toString()}`)
+              }}
             >
               {messages.availability.modalCta}
             </Button>
