@@ -1,0 +1,301 @@
+"use client"
+
+import { useEffect, useMemo, useState } from "react"
+import { format } from "date-fns"
+import { CalendarSync, LoaderCircle } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { useLanguage } from "@/contexts/LanguageContext"
+import type {
+  BoatCategory,
+  LandingAvailabilityEntry,
+  LandingBoat,
+} from "@/lib/landing-data"
+
+type AvailabilityResponse = {
+  updatedAt: string
+  boats: LandingBoat[]
+  availability: LandingAvailabilityEntry[]
+}
+
+const REFRESH_INTERVAL_MS = 60_000
+
+function toDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number)
+  return new Date(year, month - 1, day)
+}
+
+export function AvailabilityCalendarSection() {
+  const { messages } = useLanguage()
+  const [payload, setPayload] = useState<AvailabilityResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedBoat, setSelectedBoat] = useState<BoatCategory | "all">("all")
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>()
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchAvailability = async () => {
+      try {
+        const response = await fetch("/api/landing/availability", {
+          cache: "no-store",
+        })
+        const nextPayload = (await response.json()) as AvailabilityResponse
+
+        if (!cancelled) {
+          setPayload(nextPayload)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void fetchAvailability()
+    const intervalId = window.setInterval(fetchAvailability, REFRESH_INTERVAL_MS)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [])
+
+  const filteredAvailability = useMemo(() => {
+    const source = payload?.availability ?? []
+
+    if (selectedBoat === "all") {
+      return source
+    }
+
+    return source.filter((entry) => entry.boat === selectedBoat)
+  }, [payload?.availability, selectedBoat])
+
+  const statusMap = useMemo(() => {
+    const map = new Map<string, LandingAvailabilityEntry["status"]>()
+
+    filteredAvailability.forEach((entry) => {
+      const current = map.get(entry.date)
+
+      if (current === "booked") {
+        return
+      }
+
+      if (current === "limited" && entry.status === "available") {
+        return
+      }
+
+      map.set(entry.date, entry.status)
+    })
+
+    return map
+  }, [filteredAvailability])
+
+  const availableDates = useMemo(
+    () =>
+      Array.from(statusMap.entries())
+        .filter(([, status]) => status === "available")
+        .map(([date]) => toDate(date)),
+    [statusMap]
+  )
+
+  const limitedDates = useMemo(
+    () =>
+      Array.from(statusMap.entries())
+        .filter(([, status]) => status === "limited")
+        .map(([date]) => toDate(date)),
+    [statusMap]
+  )
+
+  const bookedDates = useMemo(
+    () =>
+      Array.from(statusMap.entries())
+        .filter(([, status]) => status === "booked")
+        .map(([date]) => toDate(date)),
+    [statusMap]
+  )
+
+  const activeBoat =
+    selectedBoat === "all"
+      ? "All boats"
+      : payload?.boats.find((boat) => boat.slug === selectedBoat)?.name ?? "Boat"
+
+  const handleDayClick = (day: Date) => {
+    const dateKey = format(day, "yyyy-MM-dd")
+    const status = statusMap.get(dateKey)
+
+    if (!status || status === "booked") {
+      return
+    }
+
+    setSelectedDate(day)
+    setDialogOpen(true)
+    window.dispatchEvent(
+      new CustomEvent("gaff:booking-started", {
+        detail: {
+          date: dateKey,
+          selectedBoat,
+          status,
+        },
+      })
+    )
+  }
+
+  return (
+    <section id="availability" className="landing-section scroll-mt-28">
+      <div className="landing-grid">
+        <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="section-kicker">{messages.availability.eyebrow}</p>
+            <h2 className="section-title mt-5">{messages.availability.title}</h2>
+            <p className="section-copy mt-5">{messages.availability.subtitle}</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-full border-gold/20 bg-white/4 text-white hover:bg-white/8"
+            onClick={() => {
+              setLoading(true)
+              void fetch("/api/landing/availability", { cache: "no-store" })
+                .then((response) => response.json())
+                .then((nextPayload: AvailabilityResponse) => {
+                  setPayload(nextPayload)
+                })
+                .finally(() => setLoading(false))
+            }}
+          >
+            <CalendarSync className="size-4" />
+            Refresh
+          </Button>
+        </div>
+
+        <div className="glass-panel overflow-hidden rounded-[2rem] border border-gold/10 p-6 sm:p-8">
+          <div className="mb-6 flex flex-wrap gap-3">
+            {messages.availability.filters.map((label) => {
+              const key = label.toLowerCase()
+              const value = key === "all" ? "all" : (key as BoatCategory)
+
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setSelectedBoat(value)}
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                    selectedBoat === value
+                      ? "border-gold bg-gold text-navy"
+                      : "border-gold/16 bg-white/4 text-sand/78 hover:bg-white/8"
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-[1fr_18rem]">
+            <div>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onDayClick={handleDayClick}
+                modifiers={{
+                  available: availableDates,
+                  limited: limitedDates,
+                  booked: bookedDates,
+                }}
+                modifiersClassNames={{
+                  available: "rdp-day-available",
+                  limited: "rdp-day-limited",
+                  booked: "rdp-day-booked",
+                }}
+                className="w-full rounded-[1.5rem] border border-gold/10 bg-white/2 p-4"
+              />
+            </div>
+
+            <div className="space-y-4 rounded-[1.5rem] border border-gold/10 bg-white/3 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold/76">
+                Live status
+              </p>
+              {loading ? (
+                <div className="flex items-center gap-2 text-sm text-sand/72">
+                  <LoaderCircle className="size-4 animate-spin" />
+                  Syncing latest mock availability
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3 text-sm text-sand/74">
+                    <span className="h-3 w-3 rounded-full bg-teal" />
+                    {messages.availability.available}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-sand/74">
+                    <span className="h-3 w-3 rounded-full bg-gold" />
+                    {messages.availability.limited}
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-sand/74">
+                    <span className="h-3 w-3 rounded-full bg-coral" />
+                    {messages.availability.booked}
+                  </div>
+                  <div className="pt-4 text-sm leading-7 text-sand/70">
+                    Active filter: <span className="font-semibold text-white">{activeBoat}</span>
+                  </div>
+                  <div className="text-sm leading-7 text-sand/62">
+                    Updated from <code>/api/landing/availability</code> and refreshed every 60 seconds.
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="border border-gold/12 bg-navy text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-3xl text-white">
+              Booking shell ready
+            </DialogTitle>
+            <DialogDescription className="text-sand/72">
+              Phase 3 will replace this placeholder with the full booking form and checkout flow.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-[1.5rem] border border-gold/10 bg-white/3 p-5 text-sm leading-7 text-sand/76">
+            <p>
+              <span className="font-semibold text-white">Date:</span>{" "}
+              {selectedDate ? format(selectedDate, "MMMM d, yyyy") : "Not selected"}
+            </p>
+            <p>
+              <span className="font-semibold text-white">Boat filter:</span>{" "}
+              {activeBoat}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              render={<a href="#faq" />}
+              variant="outline"
+              className="rounded-full border-gold/20 bg-white/4 text-white hover:bg-white/8"
+            >
+              Ask a question first
+            </Button>
+            <Button
+              type="button"
+              className="rounded-full bg-gold text-navy hover:bg-gold/90"
+              onClick={() => setDialogOpen(false)}
+            >
+              {messages.availability.modalCta}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </section>
+  )
+}

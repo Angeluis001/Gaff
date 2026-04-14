@@ -1,6 +1,68 @@
-import Image from "next/image";
+import type { ComponentProps, ReactElement } from "react"
+import dynamic from "next/dynamic"
+import { FleetSection } from "@/components/landing/FleetSection"
+import { HeroSection } from "@/components/landing/HeroSection"
+import { Navbar } from "@/components/landing/Navbar"
 
-export default function Home() {
+const AvailabilityCalendarSection = dynamic(
+  () =>
+    import("@/components/landing/AvailabilityCalendarSection").then(
+      (module) => module.AvailabilityCalendarSection
+    ),
+  { loading: () => null }
+)
+const FishingSeasonsSection = dynamic(
+  () =>
+    import("@/components/landing/FishingSeasonsSection").then(
+      (module) => module.FishingSeasonsSection
+    ),
+  { loading: () => null }
+)
+const TestimonialsSection = dynamic(
+  () =>
+    import("@/components/landing/TestimonialsSection").then(
+      (module) => module.TestimonialsSection
+    ),
+  { loading: () => null }
+)
+const FAQSection = dynamic(
+  () =>
+    import("@/components/landing/FAQSection").then(
+      (module) => module.FAQSection
+    ),
+  { loading: () => null }
+)
+const CrewSection = dynamic(
+  () =>
+    import("@/components/landing/CrewSection").then(
+      (module) => module.CrewSection
+    ),
+  { loading: () => null }
+)
+const ConservationSection = dynamic(
+  () =>
+    import("@/components/landing/ConservationSection").then(
+      (module) => module.ConservationSection
+    ),
+  { loading: () => null }
+)
+const CTASection = dynamic(
+  () =>
+    import("@/components/landing/CTASection").then(
+      (module) => module.CTASection
+    ),
+  { loading: () => null }
+)
+const Footer = dynamic(
+  () => import("@/components/landing/Footer").then((module) => module.Footer),
+  { loading: () => null }
+)
+
+const Image = (() => null) as unknown as (
+  props: ComponentProps<"img"> & { priority?: boolean }
+) => ReactElement | null
+
+function LegacyHome() {
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -100,4 +162,49 @@ export default function Home() {
       </footer>
     </div>
   );
+}
+
+void LegacyHome
+
+function PlaceholderCard({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
+  return (
+    <div className="glass-panel mx-auto max-w-3xl px-6 py-10 text-center sm:px-10">
+      <p className="text-xs font-semibold uppercase tracking-[0.4em] text-gold/80">
+        Next Wave
+      </p>
+      <h2 className="mt-4 font-heading text-4xl text-white sm:text-5xl">
+        {title}
+      </h2>
+      <p className="mt-4 text-base leading-7 text-sand/78">{description}</p>
+    </div>
+  )
+}
+
+void PlaceholderCard
+
+export default function Home() {
+  return (
+    <>
+      <Navbar />
+      <main className="landing-shell pb-16">
+        <HeroSection />
+        <FleetSection />
+
+        <AvailabilityCalendarSection />
+        <FishingSeasonsSection />
+        <TestimonialsSection />
+        <FAQSection />
+        <CrewSection />
+        <ConservationSection />
+        <CTASection />
+        <Footer />
+      </main>
+    </>
+  )
 }
