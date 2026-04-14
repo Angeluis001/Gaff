@@ -16,23 +16,37 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useLanguage } from "@/contexts/LanguageContext"
+import type { BoatCategory } from "@/lib/landing-data"
 import type {
-  BoatCategory,
-  LandingAvailabilityEntry,
-  LandingBoat,
-} from "@/lib/landing-data"
+  BookingAvailabilityEntry,
+  BookingAvailabilityResponse,
+  BookingBoatOption,
+} from "@/types/booking"
 
-type AvailabilityResponse = {
-  updatedAt: string
-  boats: LandingBoat[]
-  availability: LandingAvailabilityEntry[]
-}
+type AvailabilityResponse = BookingAvailabilityResponse
+type AvailabilityStatus = BookingAvailabilityEntry["status"]
 
 const REFRESH_INTERVAL_MS = 60_000
 
 function toDate(value: string) {
   const [year, month, day] = value.split("-").map(Number)
   return new Date(year, month - 1, day)
+}
+
+function getAggregatedStatus(statuses: AvailabilityStatus[]) {
+  if (statuses.includes("available")) {
+    return "available"
+  }
+
+  if (statuses.includes("limited")) {
+    return "limited"
+  }
+
+  if (statuses.includes("maintenance")) {
+    return "maintenance"
+  }
+
+  return "booked"
 }
 
 export function AvailabilityCalendarSection() {
@@ -49,7 +63,7 @@ export function AvailabilityCalendarSection() {
 
     const fetchAvailability = async () => {
       try {
-        const response = await fetch("/api/landing/availability", {
+        const response = await fetch("/api/booking/availability", {
           cache: "no-store",
         })
         const nextPayload = (await response.json()) as AvailabilityResponse
@@ -80,28 +94,63 @@ export function AvailabilityCalendarSection() {
       return source
     }
 
-    return source.filter((entry) => entry.boat === selectedBoat)
+    return source.filter((entry) => entry.boatSlug === selectedBoat)
   }, [payload?.availability, selectedBoat])
 
   const statusMap = useMemo(() => {
-    const map = new Map<string, LandingAvailabilityEntry["status"]>()
+    const map = new Map<string, AvailabilityStatus>()
+
+    if (selectedBoat !== "all") {
+      filteredAvailability.forEach((entry) => {
+        map.set(entry.date, entry.status)
+      })
+
+      return map
+    }
+
+    const groupedByDate = new Map<string, AvailabilityStatus[]>()
 
     filteredAvailability.forEach((entry) => {
-      const current = map.get(entry.date)
+      const current = groupedByDate.get(entry.date) ?? []
+      current.push(entry.status)
+      groupedByDate.set(entry.date, current)
+    })
 
-      if (current === "booked") {
-        return
-      }
-
-      if (current === "limited" && entry.status === "available") {
-        return
-      }
-
-      map.set(entry.date, entry.status)
+    groupedByDate.forEach((statuses, date) => {
+      map.set(date, getAggregatedStatus(statuses))
     })
 
     return map
-  }, [filteredAvailability])
+  }, [filteredAvailability, selectedBoat])
+
+  const boatMap = useMemo(
+    () => new Map((payload?.boats ?? []).map((boat) => [boat.slug, boat])),
+    [payload?.boats]
+  )
+
+  const selectedBoatForDate = useMemo<BookingBoatOption | null>(() => {
+    if (!selectedDate || !payload) {
+      return null
+    }
+
+    const dateKey = format(selectedDate, "yyyy-MM-dd")
+    const matches = payload.availability.filter((entry) => entry.date === dateKey)
+
+    if (selectedBoat !== "all") {
+      const selected = matches.find(
+        (entry) => entry.boatSlug === selectedBoat && entry.status !== "booked"
+      )
+
+      return selected ? boatMap.get(selected.boatSlug) ?? null : null
+    }
+
+    const bestMatch =
+      matches.find((entry) => entry.status === "available") ??
+      matches.find((entry) => entry.status === "limited") ??
+      null
+
+    return bestMatch ? boatMap.get(bestMatch.boatSlug) ?? null : null
+  }, [boatMap, payload, selectedBoat, selectedDate])
 
   const availableDates = useMemo(
     () =>
@@ -136,7 +185,7 @@ export function AvailabilityCalendarSection() {
     const dateKey = format(day, "yyyy-MM-dd")
     const status = statusMap.get(dateKey)
 
-    if (!status || status === "booked") {
+    if (!status || status === "booked" || status === "maintenance") {
       return
     }
 
@@ -168,7 +217,7 @@ export function AvailabilityCalendarSection() {
             className="rounded-full border-gold/20 bg-white/4 text-white hover:bg-white/8"
             onClick={() => {
               setLoading(true)
-              void fetch("/api/landing/availability", { cache: "no-store" })
+              void fetch("/api/booking/availability", { cache: "no-store" })
                 .then((response) => response.json())
                 .then((nextPayload: AvailabilityResponse) => {
                   setPayload(nextPayload)
@@ -231,7 +280,7 @@ export function AvailabilityCalendarSection() {
               {loading ? (
                 <div className="flex items-center gap-2 text-sm text-sand/72">
                   <LoaderCircle className="size-4 animate-spin" />
-                  Syncing latest mock availability
+                  Syncing latest live availability
                 </div>
               ) : (
                 <>
@@ -251,7 +300,8 @@ export function AvailabilityCalendarSection() {
                     Active filter: <span className="font-semibold text-white">{activeBoat}</span>
                   </div>
                   <div className="text-sm leading-7 text-sand/62">
-                    Updated from <code>/api/landing/availability</code> and refreshed every 60 seconds.
+                    Updated from <code>/api/booking/availability</code> and refreshed every 60
+                    seconds.
                   </div>
                 </>
               )}
@@ -279,6 +329,10 @@ export function AvailabilityCalendarSection() {
               <span className="font-semibold text-white">Boat filter:</span>{" "}
               {activeBoat}
             </p>
+            <p>
+              <span className="font-semibold text-white">Suggested boat:</span>{" "}
+              {selectedBoatForDate?.name ?? "Choose a specific filter if this day looks busy"}
+            </p>
           </div>
           <DialogFooter>
             <Button
@@ -301,7 +355,9 @@ export function AvailabilityCalendarSection() {
                   date: format(selectedDate, "yyyy-MM-dd"),
                 })
 
-                if (selectedBoat !== "all") {
+                if (selectedBoatForDate) {
+                  query.set("boat", selectedBoatForDate.slug)
+                } else if (selectedBoat !== "all") {
                   query.set("boat", selectedBoat)
                 }
 
