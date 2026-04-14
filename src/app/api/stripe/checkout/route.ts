@@ -3,6 +3,21 @@ import { NextResponse } from "next/server"
 import { getPendingBookingForCheckout } from "@/lib/booking/create-booking"
 import { getStripeServerClient } from "@/lib/stripe"
 
+function getSiteUrl(request: Request) {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL
+  }
+
+  const forwardedProto = request.headers.get("x-forwarded-proto")
+  const forwardedHost = request.headers.get("x-forwarded-host")
+
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`
+  }
+
+  return new URL(request.url).origin
+}
+
 export async function POST(request: Request) {
   if (!process.env.STRIPE_SECRET_KEY) {
     return NextResponse.json(
@@ -20,7 +35,7 @@ export async function POST(request: Request) {
 
     const booking = await getPendingBookingForCheckout(bookingId)
     const stripe = getStripeServerClient()
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+    const siteUrl = getSiteUrl(request)
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
