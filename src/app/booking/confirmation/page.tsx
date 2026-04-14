@@ -1,5 +1,7 @@
+import Link from "next/link"
 import { eq } from "drizzle-orm"
 
+import { Button } from "@/components/ui/button"
 import { BookingConfirmationTracker } from "@/components/booking/BookingConfirmationTracker"
 import { db } from "@/lib/db"
 import { bookings, boats, leads } from "@/lib/db/schema"
@@ -14,6 +16,21 @@ function notConfigured() {
           Stripe and database credentials need to be configured before the confirmation
           page can resolve live booking data.
         </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Button
+            render={<Link href="/" />}
+            className="rounded-full bg-gold px-6 text-navy hover:bg-gold/90"
+          >
+            Go Home
+          </Button>
+          <Button
+            render={<Link href="/#availability" />}
+            variant="outline"
+            className="rounded-full border-gold/20 bg-white/4 px-6 text-white hover:bg-white/8"
+          >
+            Check Availability
+          </Button>
+        </div>
       </div>
     </main>
   )
@@ -96,6 +113,22 @@ export default async function BookingConfirmationPage({
             </p>
           </div>
         ) : null}
+
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button
+            render={<Link href="/" />}
+            className="rounded-full bg-gold px-6 text-navy hover:bg-gold/90"
+          >
+            Back to Home
+          </Button>
+          <Button
+            render={<Link href="/#availability" />}
+            variant="outline"
+            className="rounded-full border-gold/20 bg-white/4 px-6 text-white hover:bg-white/8"
+          >
+            Review Availability
+          </Button>
+        </div>
       </div>
     </main>
   )
