@@ -14,7 +14,10 @@ import {
 import { validateBookingFormData } from "./validation"
 
 export async function createPendingBooking(
-  input: BookingFormData
+  input: BookingFormData,
+  options: {
+    source?: typeof leads.$inferSelect["source"]
+  } = {}
 ): Promise<PendingBookingResponse> {
   const payload = validateBookingFormData(input)
   const boatOptions = await getSellableBoats()
@@ -28,11 +31,12 @@ export async function createPendingBooking(
 
   const totalPrice = getBoatPrice(selectedBoat, payload.tripType)
   const depositAmount = calculateDepositAmount(totalPrice)
+  const source = options.source ?? "website"
 
   const existingLead = await db
     .select()
     .from(leads)
-    .where(and(eq(leads.email, payload.email), eq(leads.source, "website")))
+    .where(and(eq(leads.email, payload.email), eq(leads.source, source)))
 
   const [leadRecord] =
     existingLead.length > 0
@@ -57,7 +61,7 @@ export async function createPendingBooking(
             lastName: payload.lastName,
             email: payload.email,
             phone: payload.phone,
-            source: "website",
+            source,
             preferredDate: payload.tripDate,
             preferredBoatCategory: selectedBoat.category,
             groupSize: payload.guestCount,
