@@ -6,6 +6,7 @@ import { db } from "@/lib/db"
 import { boatAvailability, bookings, leads } from "@/lib/db/schema"
 import { sendBookingConfirmationEmail } from "@/lib/resend"
 import { getStripeServerClient } from "@/lib/stripe"
+import { sendWhatsAppMessage } from "@/lib/whatsapp"
 import { BookingConfirmationEmail } from "@/emails/BookingConfirmationEmail"
 
 export async function POST(request: Request) {
@@ -79,20 +80,52 @@ export async function POST(request: Request) {
     if (!isReplay && booking.leadId) {
       const [lead] = await db.select().from(leads).where(eq(leads.id, booking.leadId))
 
-      if (lead?.email && process.env.RESEND_API_KEY) {
-        await sendBookingConfirmationEmail({
-          to: lead.email,
-          subject: `Booking confirmed: ${booking.boatName} on ${booking.date
-            .toISOString()
-            .slice(0, 10)}`,
-          react: BookingConfirmationEmail({
-            customerName: `${lead.firstName} ${lead.lastName ?? ""}`.trim(),
-            boatName: booking.boatName,
-            tripDate: booking.date.toISOString().slice(0, 10),
-            tripType: booking.tripType.replace("_", " "),
-            guestCount: booking.guests,
-            depositAmount: booking.depositAmount ?? "0.00",
-          }),
+      if (lead) {
+        const customerName = `${lead.firstName} ${lead.lastName ?? ""}`.trim()
+        const tripDate = booking.date.toISOString().slice(0, 10)
+        const tripType = booking.tripType.replace("_", " ")
+
+        const notifications: Promise<unknown>[] = []
+
+        if (lead.email && process.env.RESEND_API_KEY) {
+          notifications.push(
+            sendBookingConfirmationEmail({
+              to: lead.email,
+              subject: `Booking confirmed: ${booking.boatName} on ${tripDate}`,
+              react: BookingConfirmationEmail({
+                customerName,
+                boatName: booking.boatName,
+                tripDate,
+                tripType,
+                guestCount: booking.guests,
+                depositAmount: booking.depositAmount ?? "0.00",
+              }),
+            })
+          )
+        }
+
+        const whatsappTo = lead.whatsappNumber ?? lead.phone
+        console.log(`[webhook] whatsappTo=${whatsappTo} OPENCLAW_URL=${process.env.OPENCLAW_URL?.slice(0, 40)}`)
+        if (whatsappTo && process.env.OPENCLAW_URL) {
+          const waMessage =
+            `✅ *GAFF All Fishing — Booking Confirmed!*\n\n` +
+            `Hi ${customerName},\n` +
+            `Your deposit has been received. Here are your trip details:\n\n` +
+            `🚤 *Boat:* ${booking.boatName}\n` +
+            `📅 *Date:* ${tripDate}\n` +
+            `⏱ *Trip:* ${tripType}\n` +
+            `👥 *Guests:* ${booking.guests}\n` +
+            `💰 *Deposit paid:* $${booking.depositAmount ?? "0.00"}\n\n` +
+            `We'll reach out 48 hours before your trip with final details.\n` +
+            `Questions? Reply to this message anytime. See you on the water! 🎣`
+          notifications.push(sendWhatsAppMessage(whatsappTo, waMessage))
+        }
+
+        const notifResults = await Promise.allSettled(notifications)
+        notifResults.forEach((r, i) => {
+          if (r.status === "rejected") {
+            console.error(`[webhook] notification[${i}] failed:`, r.reason)
+          }
         })
       }
     }
