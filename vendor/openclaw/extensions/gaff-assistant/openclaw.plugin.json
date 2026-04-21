@@ -1,0 +1,23 @@
+{
+  "id": "gaff-assistant",
+  "name": "GAFF Assistant",
+  "description": "GAFF knowledge and reservation bridge for OpenClaw",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "siteUrl": {
+        "type": "string",
+        "description": "Public GAFF site URL used to resolve the knowledge and reservation endpoints."
+      },
+      "knowledgePath": {
+        "type": "string",
+        "description": "Relative path for the canonical GAFF knowledge export."
+      },
+      "reservationPath": {
+        "type": "string",
+        "description": "Relative path for the GAFF reservation endpoint."
+      }
+    }
+  }
+}

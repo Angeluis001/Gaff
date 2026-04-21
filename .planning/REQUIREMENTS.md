@@ -30,7 +30,7 @@
 ### Landing Page — Technical Quality
 
 - [ ] **PERF-01**: Lighthouse Performance score > 90 on production build
-- [ ] **PERF-02**: LCP < 2.5s, FID < 100ms, CLS < 0.1 (Core Web Vitals passing)
+- [ ] **PERF-02**: LCP < 2.5s, INP < 200ms, CLS < 0.1 (Core Web Vitals passing)
 - [ ] **PERF-03**: JavaScript bundle < 200KB gzipped
 - [ ] **PERF-04**: Lenis smooth scroll configured globally
 - [ ] **SEO-01**: SEO metadata (title, description, keywords, OG tags, Twitter card) set for all pages via Next.js Metadata API
@@ -125,7 +125,7 @@
 - [ ] **INTG-03**: Cloudinary configured for all media (boat images, crew photos, gallery) with auto-format WebP and quality auto transforms
 - [ ] **INTG-04**: Meta Graph API authenticated (long-lived page token) for Instagram + Facebook publish and insights read
 - [ ] **INTG-05**: TikTok for Business API integrated for video publishing and TikTok Pixel conversion tracking
-- [ ] **INTG-06**: Google Analytics 4 + Meta Pixel + TikTok Pixel installed and firing events (pageview, booking_started, booking_completed, lead_captured)
+- [ ] **INTG-06**: Google Analytics 4 + Meta Pixel + TikTok Pixel installed and firing Phase 2 landing events (`pageview`, `booking_started`); `booking_completed` and `lead_captured` are wired when the real booking flow ships in Phase 3
 - [ ] **INTG-07**: Upstash Redis configured for rate limiting on API routes and job queuing for agent tasks via Vercel Cron
 - [ ] **INTG-08**: Sentry configured for error tracking and performance monitoring on both frontend and API routes
 
@@ -188,26 +188,26 @@
 | INFRA-06 | Phase 1 | Pending |
 | INTG-07 | Phase 1 | Pending |
 | INTG-08 | Phase 1 | Pending |
-| LAND-01 | Phase 2 | Pending |
-| LAND-02 | Phase 2 | Pending |
-| LAND-03 | Phase 2 | Pending |
-| LAND-04 | Phase 2 | Pending |
-| LAND-05 | Phase 2 | Pending |
-| LAND-06 | Phase 2 | Pending |
-| LAND-07 | Phase 2 | Pending |
-| LAND-08 | Phase 2 | Pending |
-| LAND-09 | Phase 2 | Pending |
-| LAND-10 | Phase 2 | Pending |
-| PERF-01 | Phase 2 | Pending |
-| PERF-02 | Phase 2 | Pending |
-| PERF-03 | Phase 2 | Pending |
-| PERF-04 | Phase 2 | Pending |
-| SEO-01 | Phase 2 | Pending |
-| SEO-02 | Phase 2 | Pending |
-| SEO-03 | Phase 2 | Pending |
-| SEO-04 | Phase 2 | Pending |
-| INTG-03 | Phase 2 | Pending |
-| INTG-06 | Phase 2 | Pending |
+| LAND-01 | Phase 2 | Completed |
+| LAND-02 | Phase 2 | Completed |
+| LAND-03 | Phase 2 | Completed |
+| LAND-04 | Phase 2 | Completed |
+| LAND-05 | Phase 2 | Completed |
+| LAND-06 | Phase 2 | Completed |
+| LAND-07 | Phase 2 | Completed |
+| LAND-08 | Phase 2 | Completed |
+| LAND-09 | Phase 2 | Completed |
+| LAND-10 | Phase 2 | Completed |
+| PERF-01 | Phase 2 | Deferred verification |
+| PERF-02 | Phase 2 | Deferred verification |
+| PERF-03 | Phase 2 | Deferred verification |
+| PERF-04 | Phase 2 | Completed |
+| SEO-01 | Phase 2 | Completed |
+| SEO-02 | Phase 2 | Completed |
+| SEO-03 | Phase 2 | Completed |
+| SEO-04 | Phase 2 | Completed |
+| INTG-03 | Phase 2 | Completed |
+| INTG-06 | Phase 2 | Partial - implemented, pending browser event verification |
 | BOOK-01 | Phase 3 | Pending |
 | BOOK-02 | Phase 3 | Pending |
 | BOOK-03 | Phase 3 | Pending |
@@ -270,4 +270,6 @@
 
 ---
 *Requirements defined: 2026-04-13*
-*Last updated: 2026-04-13 after roadmap creation — traceability populated*
+*Last updated: 2026-04-14 after Phase 02 implementation sync*
+
+

@@ -1483,21 +1483,16 @@ All required external tools are Node.js-based (npm packages). No external servic
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Cloudinary credentials availability**
-   - What we know: Phase 2 uses placeholder assets (D-09); real media added later
-   - What's unclear: Is a Cloudinary account already created with GAFF's cloud name?
-   - Recommendation: Use a generic placeholder cloud name for Phase 2 development; add env var to Vercel before first deployment
+   - Resolution: Planning assumes placeholder Cloudinary public IDs are acceptable in Phase 2 and the cloud name is provided through `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` before deployment. This keeps implementation unblocked while real GAFF assets are uploaded later.
 
 2. **GA4 / Pixel IDs**
-   - What we know: All three pixels need to fire on the landing page (D-16, D-17)
-   - What's unclear: Whether the client has these accounts set up
-   - Recommendation: Use placeholder `G-XXXXXXXXXX` values in `.env.local`; wire real IDs before launch
+   - Resolution: Planning uses env-guarded analytics mounts with placeholder public IDs in local development. Real IDs are a deployment-time prerequisite, not a planning blocker.
 
 3. **Stats counter real values**
-   - Build pack mentions "500+ Trips" and "4.9 Rating" but CONTEXT specifics says "15+ Years"
-   - Recommendation: Use build pack values verbatim as static copy; define in `src/lib/constants.ts`
+   - Resolution: Use the approved marketing values from CONTEXT/build-pack guidance: `500+ Trips`, `4.9★ Rating`, and `15+ Years`. Define them once in shared landing data or constants so every section stays consistent.
 
 ---
 

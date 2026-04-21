@@ -12,13 +12,13 @@ The platform is built in four natural stages anchored by the build pack: foundat
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Scaffold the Next.js app, Neon database, Drizzle schema, Vercel deployment, and observability tooling
-- [ ] **Phase 2: Landing Page** - Build all landing page sections with animation, performance optimization, SEO metadata, and bilingual support
+- [x] **Phase 1: Foundation** - Scaffold the Next.js app, Neon database, Drizzle schema, Vercel deployment, and observability tooling
+- [x] **Phase 2: Landing Page** - Build all landing page sections with animation, performance optimization, SEO metadata, and bilingual support
 - [ ] **Phase 3: Booking & Payments** - Implement the real-time availability API, booking flow, Stripe deposit, and confirmation emails
-- [ ] **Phase 4: Admin Dashboard** - Build NextAuth admin authentication and all 10 admin dashboard pages
+- [x] **Phase 4: Admin Dashboard** - Build NextAuth admin authentication and all 10 admin dashboard pages
 - [ ] **Phase 5: Chat & Lead Agent** - Embed Botpress web chat, deploy OpenClaw WhatsApp gateway, and wire the Lead Agent classification and follow-up sequences
 - [ ] **Phase 6: CRM & Reviews Agent** - Build the Client Agent lifecycle automations and the Reviews Agent monitoring and response workflow
-- [ ] **Phase 7: SEO & Marketing Agents** - Wire the SEO Agent content generation and the Marketing Agent social publishing pipeline with Meta and TikTok APIs
+- [x] **Phase 7: SEO & Marketing Agents** - Wire the SEO Agent content generation and the Marketing Agent social publishing pipeline with Meta and TikTok APIs
 - [ ] **Phase 8: Analytics Agent** - Implement the Analytics Agent dashboard population, automated report emails, and intelligent alert system
 
 ## Phase Details
@@ -32,11 +32,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Drizzle migrations run against Neon without errors and all tables exist in the database
   3. A commit to main triggers the Vercel production deployment and passes lint + type-check in CI
   4. Upstash Redis connection is verified and Sentry captures a test error on both frontend and API
-**Plans**: TBD
+**Plans**: 2
 
 Plans:
-- [ ] 01-01: Scaffold Next.js 15 app with TypeScript, Tailwind CSS, shadcn/ui, and folder structure per build pack
-- [ ] 01-02: Define Drizzle schema, run migrations against Neon, and wire Upstash Redis and Sentry
+- [x] 01-01: Scaffold Next.js 15 app with TypeScript, Tailwind CSS, shadcn/ui, and folder structure per build pack
+- [x] 01-02: Define Drizzle schema, run migrations against Neon, and wire Upstash Redis and Sentry
 
 ### Phase 2: Landing Page
 **Goal**: A US tourist landing on gaffallfishingloscabos.com sees a premium, fast-loading landing page in English (with Spanish toggle) that showcases the fleet, seasons, crew, and conservation — and passes Lighthouse > 90 with full SEO metadata.
@@ -48,13 +48,18 @@ Plans:
   3. Availability calendar renders day-level status colors and a click opens the booking modal pre-filled with the selected date
   4. Lighthouse Performance score is > 90 on production; LCP < 2.5s, CLS < 0.1, JS bundle < 200KB gzipped
   5. Schema.org JSON-LD is present in page source; sitemap.xml and OG tags are verified in production
-**Plans**: TBD
+**Plans**: 4
 **UI hint**: yes
 
 Plans:
-- [ ] 02-01: Hero, Fleet, and Conservation sections with Framer Motion, Cloudinary images, and Lenis scroll
-- [ ] 02-02: Availability calendar, Fishing Seasons chart, Testimonials carousel, FAQ, Crew, CTA, and Footer sections
-- [ ] 02-03: SEO metadata (JSON-LD, OG tags, sitemap, robots), bilingual EN/ES support, GA4 + pixel installation, and Lighthouse optimization pass
+- [x] 02-01: Hero, Fleet, and Conservation sections with Framer Motion, Cloudinary images, and Lenis scroll
+- [x] 02-02: Availability calendar, Fishing Seasons chart, Testimonials carousel, FAQ, Crew, CTA, and Footer sections
+- [x] 02-03: SEO metadata (JSON-LD, OG tags, sitemap, robots), bilingual EN/ES support, GA4 + pixel installation, and Lighthouse optimization pass
+- [x] 02-04: Analytics bridge, Botpress launcher, dynamic imports, and deployment hardening
+
+Status note:
+Preview deployment renders correctly and the phase is clear to move forward.
+Lighthouse/Core Web Vitals evidence and deeper functional review are deferred to follow-up hardening.
 
 ### Phase 3: Booking & Payments
 **Goal**: A visitor can select a date and boat on the calendar, complete the booking form, pay a 50% deposit via Stripe, and immediately receive a confirmation email — and the boat is blocked from double-booking.
@@ -66,7 +71,7 @@ Plans:
   3. Stripe checkout session opens for the 50% deposit amount; a completed payment redirects to the confirmation page with trip summary
   4. The Stripe webhook updates booking status to `deposit_paid` and blocks the boat availability record within seconds of payment
   5. Booking confirmation email arrives in the customer's inbox within 2 minutes of payment via Resend
-**Plans**: TBD
+**Plans**: 2
 
 Plans:
 - [ ] 03-01: Availability API, booking form, and booking database write logic
@@ -82,7 +87,7 @@ Plans:
   3. Leads and clients tables support search, filter, and pagination; detail pages show interaction timelines and trip histories
   4. Fleet management page allows adding and editing boats and toggling maintenance windows; bookings calendar shows per-boat per-day status
   5. All 10 admin section pages render without errors (agents panel, marketing, SEO, reviews, settings)
-**Plans**: TBD
+**Plans**: 3
 **UI hint**: yes
 
 Plans:
@@ -100,12 +105,15 @@ Plans:
   3. A lead captured from any channel (web form, chat, WhatsApp) appears in the database with source, contact info, and status `new` within 1 minute
   4. Lead Agent classifies the lead as hot/warm/cold using GPT-4o-mini within 5 minutes and triggers the correct follow-up sequence (email + WhatsApp)
   5. Admin dashboard shows an alert when a hot lead has not been contacted within 2 hours
-**Plans**: TBD
+**Plans**: 3
 
 Plans:
-- [ ] 05-01: Botpress widget embed, FAQ JSON export, and shared knowledge base wiring
-- [ ] 05-02: OpenClaw gateway deployment with `gaff-booking` agent and cross-channel database writes
-- [ ] 05-03: Lead Agent classification (GPT-4o-mini), follow-up sequence scheduling via Upstash, personalized message generation, and admin hot-lead alert
+- [x] 05-01: Canonical FAQ contract and Botpress bridge alignment
+- [x] 05-02: OpenClaw ingress and cross-channel lead normalization
+- [x] 05-03: Lead Agent classification, follow-up sequencing, and hot-lead alerts
+
+Status note:
+Phase 5 is implemented and verified. Phase 6 is ready for planning.
 
 ### Phase 6: CRM & Reviews Agent
 **Goal**: Every completed trip creates a client record that receives anniversary emails, seasonal promotions, and re-engagement campaigns — and every new review across TripAdvisor, Google, and Yelp gets a draft response surfaced in admin within one hour of detection.
@@ -117,11 +125,14 @@ Plans:
   3. Client Agent sends trip anniversary email 1 year after trip date and seasonal promotions to the matching segment
   4. Reviews Agent polls all three platforms and surfaces new reviews in the admin reviews page within 1 hour; each has a GPT-4o draft response ready for approval
   5. Admin receives a high-priority alert within 1 hour when any review is rated 3 stars or below
-**Plans**: TBD
+**Plans**: 3
 
 Plans:
-- [ ] 06-01: Client record creation on booking completion, trip history enrichment, anniversary and seasonal promotion emails, and re-engagement campaign (CRM-01 through CRM-04)
-- [ ] 06-02: Post-trip review request email, TripAdvisor/Google/Yelp polling, GPT-4o draft response generation, admin reviews page wiring, and low-star alert (CRM-05, REVW-01 through REVW-03)
+- [x] 06-01: Client record creation on booking completion, trip history enrichment, anniversary and seasonal promotion emails, and re-engagement campaign (CRM-01 through CRM-04)
+- [x] 06-02: Post-trip review request email, TripAdvisor/Google/Yelp polling, GPT-4o draft response generation, admin reviews page wiring, and low-star alert (CRM-05, REVW-01 through REVW-03)
+
+Status note:
+Phase 6 is implemented and verified. Phase 7 is ready for planning.
 
 ### Phase 7: SEO & Marketing Agents
 **Goal**: The SEO Agent automatically generates weekly blog posts and per-trip fishing reports that index fresh content, while the Marketing Agent maintains a content calendar and auto-publishes to Instagram, Facebook, and TikTok at optimal US time-zone hours.
@@ -133,12 +144,15 @@ Plans:
   3. Marketing Agent generates a weekly content calendar visible in the admin marketing section with captions and hashtags for all three platforms
   4. Marketing Agent auto-publishes approved posts to Instagram and Facebook via Meta Graph API; TikTok Pixel fires conversion events
   5. Weekly keyword ranking report is available in the admin SEO section comparing target keywords against piscessportfishing.com
-**Plans**: TBD
+**Plans**: 3
 
 Plans:
-- [ ] 07-01: SEO Agent — weekly blog post generation, per-trip fishing report, meta description updates, and keyword ranking report via Vercel Cron
-- [ ] 07-02: Meta Graph API authentication and Instagram/Facebook auto-publishing pipeline
-- [ ] 07-03: Marketing Agent content calendar generation, TikTok for Business API integration, comment engagement drafts, and Meta Ads management
+- [x] 07-01: SEO Agent — weekly blog post generation, per-trip fishing report, meta description updates, and keyword ranking report via Vercel Cron
+- [x] 07-02: Meta Graph API authentication and Instagram/Facebook auto-publishing pipeline
+- [x] 07-03: Marketing Agent content calendar generation, TikTok for Business API integration, comment engagement drafts, and Meta Ads management
+
+Status note:
+Phase 7 is implemented and verified. Phase 8 is ready for planning.
 
 ### Phase 8: Analytics Agent
 **Goal**: The admin dashboard shows live KPIs populated by the Analytics Agent, and the agent sends daily and weekly automated report emails with intelligent alerts for underperformance conditions.
@@ -149,10 +163,13 @@ Plans:
   2. Admin receives a daily email report with bookings, leads captured, and revenue totals from the previous day
   3. Admin receives a weekly report with marketing performance and SEO keyword movements
   4. Intelligent alerts fire correctly: boat idle > 3 days, lead conversion rate drop > 20%, review score < 4.5
-**Plans**: TBD
+**Plans**: 1
 
 Plans:
-- [ ] 08-01: Analytics Agent — KPI dashboard population, daily report email, weekly report email, and intelligent alert system via Vercel Cron
+- [x] 08-01: Analytics Agent — KPI dashboard population, daily report email, weekly report email, and intelligent alert system via Vercel Cron
+
+Status note:
+Phase 8 is implemented and verified.
 
 ## Progress
 
@@ -161,11 +178,13 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Not started | - |
-| 2. Landing Page | 0/3 | Not started | - |
-| 3. Booking & Payments | 0/2 | Not started | - |
-| 4. Admin Dashboard | 0/3 | Not started | - |
-| 5. Chat & Lead Agent | 0/3 | Not started | - |
-| 6. CRM & Reviews Agent | 0/2 | Not started | - |
-| 7. SEO & Marketing Agents | 0/3 | Not started | - |
-| 8. Analytics Agent | 0/1 | Not started | - |
+| 1. Foundation | 2/2 | Completed | 2026-04-14 |
+| 2. Landing Page | 4/4 | Completed with follow-up hardening | 2026-04-14 |
+| 3. Booking & Payments | 2/2 | Implemented - pending live verification | 2026-04-14 |
+| 4. Admin Dashboard | 3/3 | Completed | 2026-04-15 |
+| 5. Chat & Lead Agent | 3/3 | Completed | 2026-04-15 |
+| 6. CRM & Reviews Agent | 2/2 | Completed | 2026-04-15 |
+| 7. SEO & Marketing Agents | 3/3 | Completed | 2026-04-15 |
+| 8. Analytics Agent | 1/1 | Completed | 2026-04-15 |
+
+
