@@ -1,9 +1,8 @@
-import { and, eq, gte, lt } from "drizzle-orm"
+import { and, eq, gte, isNull, lt } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
 import { db } from "@/lib/db"
 import { bookings, boats, leads } from "@/lib/db/schema"
-import { redis } from "@/lib/redis"
 import { sendWhatsAppMessage } from "@/lib/whatsapp"
 
 function isAuthorizedCron(request: Request) {
@@ -65,7 +64,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 })
   }
 
-  // Find bookings with date = today + 2 days (MX time)
   const now = new Date()
   const targetStart = new Date(now)
   targetStart.setDate(targetStart.getDate() + 2)
@@ -87,7 +85,8 @@ export async function POST(request: Request) {
       and(
         eq(bookings.status, "deposit_paid"),
         gte(bookings.date, targetStart),
-        lt(bookings.date, targetEnd)
+        lt(bookings.date, targetEnd),
+        isNull(bookings.reminderSentAt)
       )
     )
 
@@ -98,17 +97,6 @@ export async function POST(request: Request) {
   const processed: Array<{ bookingId: string; status: string }> = []
 
   for (const booking of upcoming) {
-    const reminderKey = `gaff:trip-reminder:${booking.id}`
-
-    // Skip if already sent
-    if (redis) {
-      const alreadySent = await redis.get(reminderKey)
-      if (alreadySent) {
-        processed.push({ bookingId: booking.id, status: "already_sent" })
-        continue
-      }
-    }
-
     if (!booking.leadId) {
       processed.push({ bookingId: booking.id, status: "skipped_no_lead" })
       continue
@@ -143,12 +131,7 @@ export async function POST(request: Request) {
 
     try {
       await sendWhatsAppMessage(to, message)
-
-      if (redis) {
-        // Mark sent — expire after 3 days so key auto-cleans
-        await redis.set(reminderKey, "1", { ex: 60 * 60 * 24 * 3 })
-      }
-
+      await db.update(bookings).set({ reminderSentAt: now }).where(eq(bookings.id, booking.id))
       processed.push({ bookingId: booking.id, status: "sent" })
     } catch (err) {
       processed.push({ bookingId: booking.id, status: "error" })

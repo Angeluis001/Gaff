@@ -1,24 +1,12 @@
-import { eq, inArray } from "drizzle-orm"
+import { and, eq, inArray, isNull, lte } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { createElement } from "react"
 
 import { db } from "@/lib/db"
-import { leads, leadActivities } from "@/lib/db/schema"
-import { redis } from "@/lib/redis"
+import { leads, leadActivities, leadFollowupSteps } from "@/lib/db/schema"
 import { sendTransactionalEmail } from "@/lib/resend"
 import { sendWhatsAppMessage } from "@/lib/whatsapp"
 import { LeadFollowUpEmail } from "@/emails/LeadFollowUpEmail"
-
-type FollowUpRecord = {
-  leadId: string
-  classification: string
-  channel: "email" | "whatsapp"
-  subject: string
-  message: string
-  scheduledAt: string
-  dueAt: string
-  delayMinutes: number
-}
 
 const CONVERTED_STATUSES = ["deposit_paid", "completed", "cancelled"]
 
@@ -35,91 +23,72 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 })
   }
 
-  if (!redis) {
-    return NextResponse.json({ received: true, processedCount: 0, skippedCount: 0, processed: [], reason: "redis_not_configured" })
-  }
-
   const now = new Date()
-  const pattern = "gaff:lead-followups:*"
-  const keys = await redis.keys(pattern)
 
-  if (keys.length === 0) {
+  // Fetch all pending steps that are due
+  const dueSteps = await db
+    .select()
+    .from(leadFollowupSteps)
+    .where(and(isNull(leadFollowupSteps.sentAt), lte(leadFollowupSteps.dueAt, now)))
+
+  if (dueSteps.length === 0) {
     return NextResponse.json({ received: true, processedCount: 0, skippedCount: 0, processed: [] })
   }
 
-  // Fetch all records and filter for due ones
-  const rawValues = await Promise.all(keys.map((k) => redis!.get(k)))
-  const due: Array<{ key: string; record: FollowUpRecord }> = []
-
-  for (let i = 0; i < keys.length; i++) {
-    const raw = rawValues[i]
-    if (!raw) continue
-    const record = (typeof raw === "string" ? JSON.parse(raw) : raw) as FollowUpRecord
-    if (new Date(record.dueAt) <= now) {
-      due.push({ key: keys[i], record })
-    }
-  }
-
-  if (due.length === 0) {
-    return NextResponse.json({ received: true, processedCount: 0, skippedCount: keys.length, processed: [] })
-  }
-
-  // Fetch lead records for all due items (deduplicated)
-  const leadIds = [...new Set(due.map((d) => d.record.leadId))]
+  // Fetch leads for all due steps
+  const leadIds = [...new Set(dueSteps.map((s) => s.leadId))]
   const leadRows = await db
     .select({ id: leads.id, firstName: leads.firstName, email: leads.email, phone: leads.phone, whatsappNumber: leads.whatsappNumber, status: leads.status })
     .from(leads)
     .where(inArray(leads.id, leadIds))
 
   const leadMap = new Map(leadRows.map((l) => [l.id, l]))
+  const processed: Array<{ leadId: string; stepId: string; channel: string; status: string }> = []
 
-  const processed: Array<{ leadId: string; channel: string; status: string }> = []
-
-  for (const { key, record } of due) {
-    const lead = leadMap.get(record.leadId)
+  for (const step of dueSteps) {
+    const lead = leadMap.get(step.leadId)
 
     // Skip if lead converted, cancelled, or not found
     if (!lead || CONVERTED_STATUSES.includes(lead.status ?? "")) {
-      await redis.del(key)
-      processed.push({ leadId: record.leadId, channel: record.channel, status: "skipped_converted" })
+      await db.update(leadFollowupSteps).set({ sentAt: now }).where(eq(leadFollowupSteps.id, step.id))
+      processed.push({ leadId: step.leadId, stepId: step.id, channel: step.channel, status: "skipped_converted" })
       continue
     }
 
     try {
-      if (record.channel === "whatsapp") {
+      if (step.channel === "whatsapp") {
         const to = lead.whatsappNumber ?? lead.phone
-        if (to) {
-          await sendWhatsAppMessage(to, record.message)
-        }
+        if (to) await sendWhatsAppMessage(to, step.message)
       } else {
         if (lead.email) {
           await sendTransactionalEmail({
             to: lead.email,
-            subject: record.subject,
-            react: createElement(LeadFollowUpEmail, { firstName: lead.firstName, message: record.message }),
+            subject: step.subject,
+            react: createElement(LeadFollowUpEmail, { firstName: lead.firstName, message: step.message }),
           })
         }
       }
 
+      await db.update(leadFollowupSteps).set({ sentAt: now }).where(eq(leadFollowupSteps.id, step.id))
+
       await db.insert(leadActivities).values({
-        leadId: record.leadId,
+        leadId: step.leadId,
         type: "message_sent",
-        description: `Sent ${record.channel} follow-up (${record.classification}): ${record.subject}`,
+        description: `Sent ${step.channel} follow-up (${step.classification}): ${step.subject}`,
         agentId: "followup-agent",
       })
 
-      await redis.del(key)
-      processed.push({ leadId: record.leadId, channel: record.channel, status: "sent" })
+      processed.push({ leadId: step.leadId, stepId: step.id, channel: step.channel, status: "sent" })
     } catch (err) {
-      processed.push({ leadId: record.leadId, channel: record.channel, status: "error" })
-      console.error(`[followup] failed key=${key}`, err)
+      processed.push({ leadId: step.leadId, stepId: step.id, channel: step.channel, status: "error" })
+      console.error(`[followup] failed stepId=${step.id}`, err)
     }
   }
 
   return NextResponse.json({
     received: true,
     processedCount: processed.filter((p) => p.status === "sent").length,
-    skippedCount: keys.length - due.length,
+    skippedCount: processed.filter((p) => p.status === "skipped_converted").length,
     processed,
   })
 }

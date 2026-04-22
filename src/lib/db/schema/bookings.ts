@@ -24,6 +24,7 @@ export const bookings = pgTable('bookings', {
   internalNotes: text('internal_notes'),
   cancellationReason: text('cancellation_reason'),
   fishCaught: jsonb('fish_caught').$type<{ species: string; weight?: string; released: boolean }[]>(),
+  reminderSentAt: timestamp('reminder_sent_at'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });

@@ -1,7 +1,6 @@
 import type { LeadClassification } from "./lead-types"
 import { db } from "@/lib/db"
-import { leadActivities } from "@/lib/db/schema"
-import { redis } from "@/lib/redis"
+import { leadActivities, leadFollowupSteps } from "@/lib/db/schema"
 
 type FollowUpChannel = "email" | "whatsapp"
 
@@ -15,7 +14,7 @@ export type FollowUpStep = {
 export type FollowUpScheduleResult = {
   leadId: string
   classification: LeadClassification
-  steps: Array<FollowUpStep & { dueAt: string; key: string }>
+  steps: Array<FollowUpStep & { dueAt: string }>
 }
 
 const FOLLOW_UP_SEQUENCE: Record<LeadClassification, FollowUpStep[]> = {
@@ -69,59 +68,38 @@ const FOLLOW_UP_SEQUENCE: Record<LeadClassification, FollowUpStep[]> = {
   ],
 }
 
-function buildDueAt(delayMinutes: number, baseDate = new Date()) {
-  return new Date(baseDate.getTime() + delayMinutes * 60 * 1000)
-}
-
-export function getLeadFollowUpSequence(classification: LeadClassification) {
-  return FOLLOW_UP_SEQUENCE[classification]
-}
-
 export async function scheduleLeadFollowUps(
   lead: { id: string },
   classification: LeadClassification
 ): Promise<FollowUpScheduleResult> {
-  const steps = getLeadFollowUpSequence(classification)
-  const scheduledAt = new Date()
+  const steps = FOLLOW_UP_SEQUENCE[classification]
+  const now = new Date()
 
   const persistedSteps = await Promise.all(
     steps.map(async (step, index) => {
-      const dueAt = buildDueAt(step.delayMinutes, scheduledAt)
-      const key = `gaff:lead-followups:${lead.id}:${classification}:${index + 1}`
-      const scheduleRecord = {
+      const dueAt = new Date(now.getTime() + step.delayMinutes * 60 * 1000)
+
+      await db.insert(leadFollowupSteps).values({
         leadId: lead.id,
         classification,
         channel: step.channel,
         subject: step.subject,
         message: step.message,
-        scheduledAt: scheduledAt.toISOString(),
-        dueAt: dueAt.toISOString(),
-        delayMinutes: step.delayMinutes,
-      }
-
-      if (redis) {
-        await redis.set(key, JSON.stringify(scheduleRecord))
-      }
+        stepIndex: index + 1,
+        dueAt,
+      })
 
       await db.insert(leadActivities).values({
         leadId: lead.id,
         type: "note",
-        description: `Scheduled ${step.channel} follow-up for ${classification} lead.`,
-        metadata: scheduleRecord,
+        description: `Scheduled ${step.channel} follow-up for ${classification} lead (step ${index + 1}, due ${dueAt.toISOString()}).`,
+        metadata: { channel: step.channel, dueAt: dueAt.toISOString(), stepIndex: index + 1 },
         agentId: "lead-agent",
       })
 
-      return {
-        ...step,
-        dueAt: dueAt.toISOString(),
-        key,
-      }
+      return { ...step, dueAt: dueAt.toISOString() }
     })
   )
 
-  return {
-    leadId: lead.id,
-    classification,
-    steps: persistedSteps,
-  }
+  return { leadId: lead.id, classification, steps: persistedSteps }
 }
