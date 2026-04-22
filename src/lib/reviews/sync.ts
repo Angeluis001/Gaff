@@ -30,7 +30,7 @@ async function fetchOpenAIDraft(snapshot: ReviewSnapshot) {
     return buildDraftResponse(snapshot)
   }
 
-  const model = process.env.OPENAI_REVIEW_MODEL?.trim() || "gpt-4o"
+  const model = process.env.OPENAI_REVIEW_MODEL?.trim() || "gpt-4o-mini"
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
