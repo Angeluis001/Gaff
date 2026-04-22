@@ -13,11 +13,12 @@ import { getSearchParamNumber, getSearchParamValue, type SearchParams } from "@/
 export default async function AdminBookingsPage({
   searchParams,
 }: {
-  searchParams?: SearchParams
+  searchParams?: Promise<SearchParams>
 }) {
-  const page = getSearchParamNumber(searchParams, "page", 1)
-  const query = getSearchParamValue(searchParams, "query") ?? ""
-  const status = getSearchParamValue(searchParams, "status") ?? ""
+  const resolvedParams = await searchParams
+  const page = getSearchParamNumber(resolvedParams, "page", 1)
+  const query = getSearchParamValue(resolvedParams, "query") ?? ""
+  const status = getSearchParamValue(resolvedParams, "status") ?? ""
   const result = await getAdminBookingList({ query, status, page, pageSize: 10 })
 
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize))
