@@ -221,50 +221,39 @@ alertDigestSent: true
 
 ---
 
-## New Agent Specs (Post-testing)
+## New Agent Build Status
 
 ### Agent A — Lead Follow-up Nurturing
 
-**Priority:** 🔴 Critical  
-**Why:** Lead classification is useless without automated follow-up execution.
+**Status:** ✅ Built & deployed (2026-04-22)  
+**Endpoint:** `POST /api/cron/leads/followup` — runs hourly via vercel.json  
+**Logic:**
+- Scans Redis for `gaff:lead-followups:*` keys where `dueAt <= now`
+- Skips leads with status `deposit_paid / completed / cancelled`
+- Sends WhatsApp (OpenClaw) or email (Resend + LeadFollowUpEmail template)
+- Deletes Redis key after send, logs to `leadActivities`
 
-**Design:**
-- Cron: every hour — `POST /api/cron/leads/followup`
-- Reads Redis keys: `gaff:lead-followups:{leadId}:{classification}:{stepIndex}`
-- For each due key: send WhatsApp via `/gaff/notify`, send email via Resend
-- Marks step complete, schedules next step
-- Stops if lead books or unsubscribes
-
-**Follow-up sequences:**
-- Hot: WhatsApp immediately → email 2h → WhatsApp 24h → email 48h
-- Warm: Email 24h → WhatsApp 72h → email 7d
-- Cold: Email 7d → email 30d (newsletter only)
+**Pending test:** Verify end-to-end with a hot lead + real follow-up delay
 
 ---
 
 ### Agent B — Pre-trip Reminder
 
-**Priority:** 🟠 High  
-**Why:** No automated 48h reminder exists — reduces no-shows, improves customer experience.
+**Status:** ✅ Built & deployed (2026-04-22)  
+**Endpoint:** `POST /api/cron/trips/remind` — runs daily at 14:00 UTC (8am MX)  
+**Logic:**
+- Queries `deposit_paid` bookings with `date = today + 2 days`
+- JOINs leads (phone/WhatsApp) + boats (name, captain)
+- Sends WhatsApp with boat, captain, Dock F meeting point, gear list, weather link
+- Deduplicates via Redis key `gaff:trip-reminder:{bookingId}` (3d TTL)
 
-**Design:**
-- Cron: daily at 8am MX time — `POST /api/cron/trips/remind`
-- Query: `bookings WHERE date = today + 2 days AND status = deposit_paid`
-- For each booking: send WhatsApp via `/gaff/notify` with trip details + what to bring + meeting point
-- Mark reminder sent in `bookings.metadata`
-
-**Message includes:**
-- Boat name, date, time, trip type
-- Marina meeting point (Cabo San Lucas Marina, Dock F)
-- What to bring (sunscreen, hat, seasickness meds, camera)
-- Captain contact info
-- Weather/conditions link
+**Pending test:** Create booking dated today+2, run cron, verify WhatsApp delivery
 
 ---
 
 ### Agent C — SEO Content Writer (GPT-4o-mini upgrade)
 
-**Priority:** 🟡 Medium  
+**Status:** 🔴 Not built — next priority  
 **Why:** Current SEO agent generates placeholder text, not real publishable content.
 
 **Design:**
@@ -279,13 +268,16 @@ alertDigestSent: true
 
 | Agent | Status | AI Working | External APIs | Gaps |
 |-------|--------|-----------|---------------|------|
-| 1. Lead Classification | ✅ | ✅ GPT-4o-mini confirmed | ✅ | Follow-up cron missing |
-| 2. WhatsApp Assistant | ⏳ | ⏳ OpenClaw | ⏳ | Not tested |
+| 1. Lead Classification | ✅ | ✅ GPT-4o-mini confirmed | ✅ | — |
+| 2. WhatsApp Assistant | ✅ | ✅ OpenClaw | ✅ | Full booking flow test pending |
 | 3. Reviews + Response | ✅ | ✅ GPT-4o-mini confirmed | ⚠️ No platform URLs | Standalone respond cron missing |
-| 4. SEO Generation | ⚠️ | ❌ Template only | ✅ | Content placeholder, Agent C needed |
+| 4. SEO Generation | ⚠️ | ❌ Template only | ✅ | Agent C not yet built |
 | 5. Social Publishing | ⚠️ | N/A | ❌ No Meta/TikTok tokens | Missing credentials |
 | 6. Analytics | ✅ | N/A | ✅ Resend | Thresholds not tuned |
+| A. Lead Follow-up | ✅ Built | ✅ Email + WhatsApp | ✅ | E2E test pending |
+| B. Pre-trip Reminder | ✅ Built | ✅ WhatsApp | ✅ | E2E test pending |
+| C. SEO Writer | 🔴 Not built | — | — | Next to build |
 
-**Overall:** 3/6 fully passing · 2/6 partial · 1/6 not tested
+**Overall:** 5/6 original agents tested · 2 new agents built · 1 new agent pending
 
 **Next priority:** Build Agent A (Lead Follow-up Nurturing) — highest impact gap.
