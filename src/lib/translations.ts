@@ -1,3 +1,5 @@
+import { chatFaqCatalog } from "@/lib/chat/faq"
+
 export type Language = "en" | "es"
 
 type StatItem = {
@@ -264,47 +266,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
         },
       ],
     },
-    faq: {
-      eyebrow: "FAQ",
-      title: "Answer the big questions before they become objections",
-      subtitle:
-        "The searchable FAQ and chat handoff will be populated in Wave 2 while keeping this translation contract stable today.",
-      searchPlaceholder: "Search questions...",
-      chatCta: "Chat with us",
-      categories: [
-        {
-          id: "general",
-          label: "General",
-          items: [
-            {
-              question: "What should I bring on my trip?",
-              answer:
-                "Bring sun protection, comfortable clothes, and any personal essentials. The crew handles the fishing setup.",
-            },
-          ],
-        },
-        {
-          id: "booking",
-          label: "Booking",
-          items: [
-            {
-              question: "How far in advance should I book?",
-              answer: "Prime dates move quickly, so booking two to three weeks ahead is best.",
-            },
-          ],
-        },
-        {
-          id: "on-the-boat",
-          label: "On The Boat",
-          items: [
-            {
-              question: "Can children join the trip?",
-              answer: "Yes. We can recommend the best boat class and duration for families.",
-            },
-          ],
-        },
-      ],
-    },
+    faq: chatFaqCatalog.en,
     crew: {
       eyebrow: "Crew",
       title: "Captains with local instinct and guest-first hospitality",
@@ -479,47 +441,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
         },
       ],
     },
-    faq: {
-      eyebrow: "FAQ",
-      title: "Responde las preguntas antes de que se vuelvan objeciones",
-      subtitle:
-        "El FAQ buscable y el disparador del chat llegan en la Ola 2 mientras este contrato de traduccion queda estable.",
-      searchPlaceholder: "Buscar preguntas...",
-      chatCta: "Chatea con nosotros",
-      categories: [
-        {
-          id: "general",
-          label: "General",
-          items: [
-            {
-              question: "Que debo llevar al viaje?",
-              answer:
-                "Lleva proteccion solar, ropa comoda y tus esenciales personales. La tripulacion se encarga del equipo de pesca.",
-            },
-          ],
-        },
-        {
-          id: "booking",
-          label: "Reservacion",
-          items: [
-            {
-              question: "Con cuanta anticipacion debo reservar?",
-              answer: "Las mejores fechas se ocupan rapido, asi que lo ideal es reservar con 2 a 3 semanas.",
-            },
-          ],
-        },
-        {
-          id: "on-the-boat",
-          label: "A Bordo",
-          items: [
-            {
-              question: "Pueden ir ninos?",
-              answer: "Si. Podemos sugerir la categoria y duracion ideal para familias.",
-            },
-          ],
-        },
-      ],
-    },
+    faq: chatFaqCatalog.es,
     crew: {
       eyebrow: "Tripulacion",
       title: "Capitanes con instinto local y hospitalidad real",

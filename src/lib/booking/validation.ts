@@ -34,19 +34,19 @@ export function validateBookingFormData(input: BookingFormData) {
     throw new Error("Guest count must be between 1 and 12.")
   }
 
-  if (!input.firstName.trim()) {
+  if (!input.firstName?.trim()) {
     throw new Error("First name is required.")
   }
 
-  if (!input.lastName.trim()) {
+  if (!input.lastName?.trim()) {
     throw new Error("Last name is required.")
   }
 
-  if (!EMAIL_PATTERN.test(input.email.trim())) {
+  if (!input.email?.trim() || !EMAIL_PATTERN.test(input.email.trim())) {
     throw new Error("Email address is invalid.")
   }
 
-  if (!PHONE_PATTERN.test(input.phone.trim())) {
+  if (!input.phone?.trim() || !PHONE_PATTERN.test(input.phone.trim())) {
     throw new Error("Phone number is invalid.")
   }
 

@@ -6,5 +6,6 @@ export * from './bookings';
 export * from './availability';
 export * from './activities';
 export * from './marketing';
+export * from './seo-posts';
 export * from './reviews';
 export * from './admin-users';

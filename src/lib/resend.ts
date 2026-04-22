@@ -34,3 +34,20 @@ export async function sendBookingConfirmationEmail({
     react,
   })
 }
+
+export async function sendTransactionalEmail({
+  to,
+  subject,
+  react,
+}: {
+  to: string
+  subject: string
+  react: ReactElement
+}) {
+  return getResendClient().emails.send({
+    from: `${SITE_NAME} <${CONTACT_EMAIL}>`,
+    to,
+    subject,
+    react,
+  })
+}
