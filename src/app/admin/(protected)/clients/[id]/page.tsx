@@ -12,9 +12,10 @@ import { getAdminClientDetail } from "@/lib/admin/clients"
 export default async function AdminClientDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const detail = await getAdminClientDetail(params.id)
+  const { id } = await params
+  const detail = await getAdminClientDetail(id)
 
   if (!detail) {
     notFound()

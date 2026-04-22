@@ -1,0 +1,50 @@
+{
+  gateway: {
+    mode: "local",
+    port: 8080,
+    bind: "lan",
+    auth: {
+      mode: "token",
+      token: "${OPENCLAW_GATEWAY_TOKEN}",
+    },
+    controlUi: {
+      enabled: true,
+      basePath: "/openclaw",
+      allowedOrigins: ["https://openclaw-production-cb33.up.railway.app"],
+    },
+  },
+  plugins: {
+    load: {
+      paths: ["/app/extensions/gaff-assistant", "/app/extensions/whatsapp"],
+    },
+    entries: {
+      "gaff-assistant": {
+        enabled: true,
+      },
+      whatsapp: {
+        enabled: true,
+      },
+    },
+  },
+  channels: {
+    whatsapp: {
+      enabled: true,
+      dmPolicy: "allowlist",
+      allowFrom: ["*"],
+      selfChatMode: false,
+    },
+  },
+  hooks: {
+    internal: {
+      enabled: true,
+      load: {
+        extraDirs: ["/app/hooks"],
+      },
+      entries: {
+        "gaff-webhook": {
+          enabled: true,
+        },
+      },
+    },
+  },
+}

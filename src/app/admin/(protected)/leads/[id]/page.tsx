@@ -12,9 +12,10 @@ import { getAdminLeadDetail } from "@/lib/admin/leads"
 export default async function AdminLeadDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const detail = await getAdminLeadDetail(params.id)
+  const { id } = await params
+  const detail = await getAdminLeadDetail(id)
 
   if (!detail) {
     notFound()

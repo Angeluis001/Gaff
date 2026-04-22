@@ -1,0 +1,60 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.11.1
+2 info using node@v25.8.2
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:D:\GAFF\vendor\openclaw\.npmrc
+5 silly config load:file:C:\Users\angel\.npmrc
+6 silly config load:file:C:\Users\angel\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm exec @railway/cli service status --json
+8 verbose argv "exec" "--yes" "--" "@railway/cli" "service" "status" "--json"
+9 verbose logfile logs-max:10 dir:D:\GAFF\vendor\openclaw\.npm-cache\_logs\2026-04-16T15_32_49_930Z-
+10 verbose logfile D:\GAFF\vendor\openclaw\.npm-cache\_logs\2026-04-16T15_32_49_930Z-debug-0.log
+11 warn Unknown project config "node-linker". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+12 silly logfile done cleaning log files
+13 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+14 http fetch GET 200 https://registry.npmjs.org/@railway%2fcli 360ms (cache miss)
+15 verbose type system
+16 verbose stack FetchError: Invalid response body while trying to fetch https://registry.npmjs.org/@railway%2fcli: EPERM: operation not permitted, unlink 'D:\GAFF\vendor\openclaw\.npm-cache\_cacache\tmp\408d2c12'
+16 verbose stack     at C:\Program Files\nodejs\node_modules\npm\node_modules\minipass-fetch\lib\body.js:174:15
+16 verbose stack     at async Response.json (C:\Program Files\nodejs\node_modules\npm\node_modules\minipass-fetch\lib\body.js:75:17)
+16 verbose stack     at async RegistryFetcher.packument (C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\registry.js:98:25)
+16 verbose stack     at async RegistryFetcher.manifest (C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\registry.js:128:23)
+16 verbose stack     at async getManifest (C:\Program Files\nodejs\node_modules\npm\node_modules\libnpmexec\lib\index.js:29:22)
+16 verbose stack     at async missingFromTree (C:\Program Files\nodejs\node_modules\npm\node_modules\libnpmexec\lib\index.js:69:22)
+16 verbose stack     at async C:\Program Files\nodejs\node_modules\npm\node_modules\libnpmexec\lib\index.js:191:32
+16 verbose stack     at async Promise.all (index 0)
+16 verbose stack     at async exec (C:\Program Files\nodejs\node_modules\npm\node_modules\libnpmexec\lib\index.js:189:3)
+16 verbose stack     at async Npm.exec (C:\Program Files\nodejs\node_modules\npm\lib\npm.js:193:9)
+17 error code EPERM
+18 error syscall unlink
+19 error path D:\GAFF\vendor\openclaw\.npm-cache\_cacache\tmp\408d2c12
+20 error errno EPERM
+21 error FetchError: Invalid response body while trying to fetch https://registry.npmjs.org/@railway%2fcli: EPERM: operation not permitted, unlink 'D:\GAFF\vendor\openclaw\.npm-cache\_cacache\tmp\408d2c12'
+21 error     at C:\Program Files\nodejs\node_modules\npm\node_modules\minipass-fetch\lib\body.js:174:15
+21 error     at async Response.json (C:\Program Files\nodejs\node_modules\npm\node_modules\minipass-fetch\lib\body.js:75:17)
+21 error     at async RegistryFetcher.packument (C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\registry.js:98:25)
+21 error     at async RegistryFetcher.manifest (C:\Program Files\nodejs\node_modules\npm\node_modules\pacote\lib\registry.js:128:23)
+21 error     at async getManifest (C:\Program Files\nodejs\node_modules\npm\node_modules\libnpmexec\lib\index.js:29:22)
+21 error     at async missingFromTree (C:\Program Files\nodejs\node_modules\npm\node_modules\libnpmexec\lib\index.js:69:22)
+21 error     at async C:\Program Files\nodejs\node_modules\npm\node_modules\libnpmexec\lib\index.js:191:32
+21 error     at async Promise.all (index 0)
+21 error     at async exec (C:\Program Files\nodejs\node_modules\npm\node_modules\libnpmexec\lib\index.js:189:3)
+21 error     at async Npm.exec (C:\Program Files\nodejs\node_modules\npm\lib\npm.js:193:9) {
+21 error   code: 'EPERM',
+21 error   errno: 'EPERM',
+21 error   syscall: 'unlink',
+21 error   path: 'D:\\GAFF\\vendor\\openclaw\\.npm-cache\\_cacache\\tmp\\408d2c12',
+21 error   type: 'system'
+21 error }
+22 error
+22 error The operation was rejected by your operating system.
+22 error It's possible that the file was already in use (by a text editor or antivirus), or that you lack permissions to access it.
+22 error
+22 error If you believe this might be a permissions issue, please double-check the permissions of the file and its containing directories, or try running the command again as root/Administrator.
+23 verbose cwd D:\GAFF\vendor\openclaw
+24 verbose os Windows_NT 10.0.26300
+25 verbose node v25.8.2
+26 verbose npm  v11.11.1
+27 verbose exit 1
+28 verbose code 1
+29 error A complete log of this run can be found in: D:\GAFF\vendor\openclaw\.npm-cache\_logs\2026-04-16T15_32_49_930Z-debug-0.log

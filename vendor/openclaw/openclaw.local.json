@@ -1,0 +1,55 @@
+{
+  gateway: {
+    mode: "local",
+    port: 18789,
+    bind: "lan",
+    auth: {
+      mode: "token",
+      token: "${OPENCLAW_GATEWAY_TOKEN}",
+    },
+    controlUi: {
+      enabled: true,
+      basePath: "/openclaw",
+      allowedOrigins: ["http://localhost:3000", "http://localhost:18789"],
+    },
+  },
+  plugins: {
+    load: {
+      paths: ["./extensions/gaff-assistant", "./extensions/whatsapp"],
+    },
+    entries: {
+      "gaff-assistant": {
+        enabled: true,
+        config: {
+          siteUrl: "${GAFF_SITE_URL}",
+          knowledgePath: "/api/chat/knowledge",
+          reservationPath: "/api/chat/reservation",
+        },
+      },
+      whatsapp: {
+        enabled: true,
+      },
+    },
+  },
+  channels: {
+    whatsapp: {
+      enabled: true,
+      dmPolicy: "allowlist",
+      allowFrom: ["*"],
+      selfChatMode: false,
+    },
+  },
+  hooks: {
+    internal: {
+      enabled: true,
+      load: {
+        extraDirs: ["./hooks"],
+      },
+      entries: {
+        "gaff-webhook": {
+          enabled: true,
+        },
+      },
+    },
+  },
+}

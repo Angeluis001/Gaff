@@ -13,9 +13,10 @@ import { getAdminBookingDetail } from "@/lib/admin/bookings"
 export default async function AdminBookingDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const detail = await getAdminBookingDetail(params.id)
+  const { id } = await params
+  const detail = await getAdminBookingDetail(id)
 
   if (!detail) {
     notFound()
