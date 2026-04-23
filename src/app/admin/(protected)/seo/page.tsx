@@ -4,6 +4,7 @@ import { SectionStatusCard } from "@/components/admin/SectionStatusCard"
 import { AdminStatGrid } from "@/components/admin/AdminStatGrid"
 import { MetricCard } from "@/components/admin/MetricCard"
 import { StatusBadge } from "@/components/admin/StatusBadge"
+import { PublishSeoPostButton } from "@/components/admin/PublishSeoPostButton"
 import { Card, CardContent } from "@/components/ui/card"
 import { getAdminSeoOverview } from "@/lib/admin/seo"
 
@@ -110,16 +111,23 @@ export default async function AdminSeoPage() {
                     <span className="hidden group-open:inline">▼ Hide content</span>
                   </summary>
                   <div className="mt-3 rounded-xl border border-white/10 bg-black/20 px-4 py-4">
-                    <pre className="whitespace-pre-wrap text-sm leading-relaxed text-white/75 font-sans">
+                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-white/75">
                       {post.content}
                     </pre>
                   </div>
                 </details>
 
-                {/* Footer dates */}
-                <div className="mt-3 text-xs text-white/30">
-                  {post.scheduledAt && <>Scheduled: {post.scheduledAt}</>}
-                  {post.publishedAt && <> · Published: {post.publishedAt}</>}
+                {/* Actions + dates */}
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="text-xs text-white/30">
+                    {post.scheduledAt && <>Scheduled: {post.scheduledAt}</>}
+                    {post.publishedAt ? (
+                      <> · Published: {post.publishedAt} · <a href={`/blog/${post.slug}`} target="_blank" className="text-sky-400/70 hover:text-sky-400">View on blog →</a></>
+                    ) : null}
+                  </div>
+                  {post.status !== "published" && (
+                    <PublishSeoPostButton postId={post.id} />
+                  )}
                 </div>
               </CardContent>
             </Card>

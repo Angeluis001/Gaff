@@ -42,6 +42,7 @@ export async function getAdminSeoOverview() {
     })),
     recentSeoPosts: sortedSeoRows.slice(0, 10).map((post) => ({
       id: post.id,
+      slug: post.slug,
       kind: post.kind,
       title: post.title,
       status: post.status ?? "draft",
