@@ -70,6 +70,9 @@ export function Navbar() {
                 {messages.nav.links[item.key]}
               </a>
             ))}
+            <Link href="/blog" className="text-sm font-medium text-sand/82 hover:text-white">
+              {messages.nav.links.blog}
+            </Link>
           </nav>
 
           <div className="hidden items-center gap-3 lg:flex">
@@ -162,6 +165,9 @@ export function Navbar() {
                       {messages.nav.links[item.key]}
                     </a>
                   ))}
+                  <Link href="/blog" className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white">
+                    {messages.nav.links.blog}
+                  </Link>
                 </div>
                 <Button
                   render={<a href="#availability" />}

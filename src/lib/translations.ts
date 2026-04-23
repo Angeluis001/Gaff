@@ -58,6 +58,7 @@ export type LandingTranslationMap = {
       faq: string
       crew: string
       conservation: string
+      blog: string
     }
     primaryCta: string
     languageLabel: string
@@ -151,6 +152,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
         faq: "FAQ",
         crew: "Crew",
         conservation: "Conservation",
+        blog: "Blog",
       },
       primaryCta: "Book Now",
       languageLabel: "Language",
@@ -326,6 +328,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
         faq: "FAQ",
         crew: "Tripulacion",
         conservation: "Conservacion",
+        blog: "Blog",
       },
       primaryCta: "Reservar",
       languageLabel: "Idioma",
