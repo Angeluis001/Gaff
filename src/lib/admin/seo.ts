@@ -40,11 +40,14 @@ export async function getAdminSeoOverview() {
       tripType: booking.tripType,
       status: booking.status ?? "pending",
     })),
-    recentSeoPosts: sortedSeoRows.slice(0, 5).map((post) => ({
+    recentSeoPosts: sortedSeoRows.slice(0, 10).map((post) => ({
       id: post.id,
       kind: post.kind,
       title: post.title,
       status: post.status ?? "draft",
+      excerpt: post.excerpt ?? null,
+      content: post.content,
+      keywordFocus: post.keywordFocus ?? null,
       publishedAt: post.publishedAt ? formatDateTime(post.publishedAt) : null,
       scheduledAt: post.scheduledAt ? formatDateTime(post.scheduledAt) : null,
     })),
