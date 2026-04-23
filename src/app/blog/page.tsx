@@ -34,7 +34,10 @@ export default async function BlogPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-20">
-      <header className="mb-12">
+      <Link href="/" className="text-sm text-white/40 hover:text-white/70 transition-colors">
+        ← Back to GAFF All Fishing
+      </Link>
+      <header className="mb-12 mt-8">
         <p className="text-sm uppercase tracking-widest text-amber-500">GAFF All Fishing Los Cabos</p>
         <h1 className="mt-2 text-4xl font-bold text-white">Fishing Blog & Reports</h1>
         <p className="mt-3 text-white/60">
