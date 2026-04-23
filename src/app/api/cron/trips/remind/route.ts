@@ -65,11 +65,28 @@ export async function POST(request: Request) {
   }
 
   const now = new Date()
-  const targetStart = new Date(now)
-  targetStart.setDate(targetStart.getDate() + 2)
-  targetStart.setHours(0, 0, 0, 0)
-  const targetEnd = new Date(targetStart)
-  targetEnd.setDate(targetEnd.getDate() + 1)
+
+  // Calculate "today" in Mexico timezone (Mazatlan = UTC-7 / UTC-6 DST)
+  // Vercel runs in UTC so without this, midnight crossovers shift the target day by one.
+  const mxParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Mazatlan",
+    year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(now)
+  const mxYear = Number(mxParts.find((p) => p.type === "year")!.value)
+  const mxMonth = Number(mxParts.find((p) => p.type === "month")!.value) - 1
+  const mxDay = Number(mxParts.find((p) => p.type === "day")!.value)
+
+  // Trip date 2 days from now in Mexico calendar
+  const targetMx = new Date(mxYear, mxMonth, mxDay + 2)
+  const targetDate = [
+    targetMx.getFullYear(),
+    String(targetMx.getMonth() + 1).padStart(2, "0"),
+    String(targetMx.getDate()).padStart(2, "0"),
+  ].join("-")
+
+  // Full UTC day range covering that Mexico calendar date
+  const targetStart = new Date(`${targetDate}T00:00:00.000Z`)
+  const targetEnd = new Date(`${targetDate}T23:59:59.999Z`)
 
   const upcoming = await db
     .select({
