@@ -81,6 +81,11 @@ export async function POST(request: Request) {
       const [lead] = await db.select().from(leads).where(eq(leads.id, booking.leadId))
 
       if (lead) {
+        await db
+          .update(leads)
+          .set({ status: "booked", updatedAt: new Date() })
+          .where(eq(leads.id, lead.id))
+
         const customerName = `${lead.firstName} ${lead.lastName ?? ""}`.trim()
         const tripDate = booking.date.toISOString().slice(0, 10)
         const tripType = booking.tripType.replace("_", " ")
