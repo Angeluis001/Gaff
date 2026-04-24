@@ -3,6 +3,8 @@ import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google"
 
 import { AnalyticsScripts } from "@/components/AnalyticsScripts"
 import { BotpressWidgetBridge } from "@/components/BotpressWidgetBridge"
+import { ChatWidget } from "@/components/landing/ChatWidget"
+import { WhatsAppButton } from "@/components/landing/WhatsAppButton"
 import { SmoothScroll } from "@/components/SmoothScroll"
 import { LanguageProvider } from "@/contexts/LanguageContext"
 import {
@@ -146,6 +148,8 @@ export default function RootLayout({
           <AnalyticsScripts />
           <BotpressWidgetBridge />
           <SmoothScroll />
+          <WhatsAppButton />
+          <ChatWidget />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

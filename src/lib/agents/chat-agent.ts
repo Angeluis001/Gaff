@@ -354,3 +354,169 @@ export async function runChatAgent(input: ChatAgentInput): Promise<ChatAgentResu
     escalated: false,
   }
 }
+
+// ── Web chat agent (no DB session, stateless, includes WhatsApp handoff tool) ─
+
+export type WebChatMessage = { role: "user" | "assistant"; content: string }
+
+export type WebChatAgentResult = {
+  reply: string
+  handoffUrl?: string
+}
+
+const WEB_TOOLS = [
+  ...TOOLS.filter((t) => t.function.name !== "escalate_to_human"),
+  {
+    type: "function" as const,
+    function: {
+      name: "request_whatsapp_handoff",
+      description:
+        "Generate a WhatsApp link so the customer can continue the conversation there. Use when they ask to speak on WhatsApp, want to talk to a person, or prefer direct messaging.",
+      parameters: {
+        type: "object",
+        properties: {
+          summary: {
+            type: "string",
+            description:
+              "1-2 sentence summary of what the customer wants — this pre-fills their WhatsApp message",
+          },
+        },
+        required: ["summary"],
+      },
+    },
+  },
+]
+
+function buildWebSystemPrompt(todayDate: string) {
+  return `You are the virtual assistant for GAFF All Fishing Los Cabos — a premium sport fishing charter company in Cabo San Lucas, Mexico.
+
+Today's date: ${todayDate}
+
+YOUR ROLE: Help US tourists plan and book their Cabo fishing charter via the website chat. You can answer questions, check live availability, share pricing, and send booking links.
+
+RESPONSE RULES:
+- Respond in the same language the customer writes in (English or Spanish)
+- Keep replies concise — 2-3 short lines max for chat
+- Be warm, knowledgeable, and direct
+- Always use tools for real-time availability and pricing — never guess
+- When the customer is ready to book, use get_booking_link to provide the direct link
+- If they want to continue on WhatsApp or talk to a person, use request_whatsapp_handoff
+
+GAFF FLEET:
+- Standard 26ft | 4 guests | from $550 half-day / $850 full-day
+- Midsize 31ft | 6 guests | from $850 half-day / $1,250 full-day
+- Large 38ft | 8 guests | from $1,250 half-day / $1,800 full-day
+- Luxury 45ft | 10 guests | from $1,550 half-day / $1,950 full-day
+
+DEPARTURE: 6:30 AM from Cabo San Lucas marina (early 5:30 AM option available)
+INCLUDES: Captain, mate, tackle, fishing license, ice, water`
+}
+
+async function executeWebTool(
+  name: string,
+  args: Record<string, string>
+): Promise<{ result: string; handoffUrl?: string }> {
+  const waNumber =
+    process.env.NEXT_PUBLIC_GAFF_WHATSAPP_NUMBER || "526241000381"
+
+  switch (name) {
+    case "check_availability":
+      return { result: JSON.stringify(await checkAvailability(args.date, args.boat_category)) }
+    case "get_pricing":
+      return { result: JSON.stringify(getPricing(args.boat_category)) }
+    case "get_booking_link":
+      return { result: JSON.stringify(getBookingLink(args.date, args.boat_category)) }
+    case "get_seasons_info":
+      return { result: JSON.stringify(getSeasonsInfo()) }
+    case "request_whatsapp_handoff": {
+      const text = encodeURIComponent(
+        args.summary || "Hi! I was chatting with GAFF on your website and I'm interested in booking a fishing trip."
+      )
+      const url = `https://wa.me/${waNumber}?text=${text}`
+      return { result: JSON.stringify({ handoffUrl: url }), handoffUrl: url }
+    }
+    default:
+      return { result: JSON.stringify({ error: "Unknown tool" }) }
+  }
+}
+
+export async function runWebChatAgent(
+  history: WebChatMessage[],
+  userMessage: string
+): Promise<WebChatAgentResult> {
+  if (!process.env.OPENAI_API_KEY) {
+    return { reply: "Hi! I'm the GAFF assistant. Unfortunately I'm offline right now — please reach us on WhatsApp for immediate help. 🎣" }
+  }
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  const apiMessages: Array<{ role: string; content: string; tool_call_id?: string; name?: string; tool_calls?: unknown }> = [
+    { role: "system", content: buildWebSystemPrompt(today) },
+    ...history.slice(-10),
+    { role: "user", content: userMessage },
+  ]
+
+  let handoffUrl: string | undefined
+
+  for (let round = 0; round < 4; round++) {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: CHAT_MODEL,
+        temperature: 0.7,
+        max_tokens: 300,
+        messages: apiMessages,
+        tools: WEB_TOOLS,
+        tool_choice: "auto",
+      }),
+    })
+
+    if (!response.ok) {
+      console.error(`[web-chat-agent] OpenAI error ${response.status}`)
+      return { reply: "I'm having trouble right now. Please try again or reach us on WhatsApp. 🎣" }
+    }
+
+    const payload = (await response.json()) as {
+      choices: Array<{
+        message: {
+          role: string
+          content: string | null
+          tool_calls?: Array<{ id: string; type: string; function: { name: string; arguments: string } }>
+        }
+        finish_reason: string
+      }>
+    }
+
+    const choice = payload.choices[0]
+    if (!choice) break
+
+    const assistantMessage = choice.message
+
+    if (!assistantMessage.tool_calls?.length) {
+      return { reply: assistantMessage.content?.trim() ?? "", handoffUrl }
+    }
+
+    apiMessages.push({ role: "assistant", content: assistantMessage.content ?? "", tool_calls: assistantMessage.tool_calls })
+
+    for (const toolCall of assistantMessage.tool_calls) {
+      let args: Record<string, string> = {}
+      try { args = JSON.parse(toolCall.function.arguments) as Record<string, string> } catch { /* empty */ }
+
+      const toolResult = await executeWebTool(toolCall.function.name, args)
+      if (toolResult.handoffUrl) handoffUrl = toolResult.handoffUrl
+
+      apiMessages.push({
+        role: "tool",
+        tool_call_id: toolCall.id,
+        name: toolCall.function.name,
+        content: toolResult.result,
+      })
+    }
+  }
+
+  return { reply: "Let me connect you with our team. 🎣", handoffUrl }
+}
