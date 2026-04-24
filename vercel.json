@@ -13,6 +13,10 @@
       "schedule": "0 14 * * *"
     },
     {
+      "path": "/api/cron/trips/review-request",
+      "schedule": "0 15 * * *"
+    },
+    {
       "path": "/api/cron/reviews/poll",
       "schedule": "0 9 * * *"
     },

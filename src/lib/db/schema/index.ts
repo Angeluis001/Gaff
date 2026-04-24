@@ -10,3 +10,4 @@ export * from './seo-posts';
 export * from './reviews';
 export * from './admin-users';
 export * from './lead-followup-steps';
+export * from './whatsapp-sessions';

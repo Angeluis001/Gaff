@@ -65,6 +65,27 @@ const FOLLOW_UP_SEQUENCE: Record<LeadClassification, FollowUpStep[]> = {
       message:
         "If your timing changed, we can help you pick a better window for offshore fishing in Cabo.",
     },
+    {
+      channel: "whatsapp",
+      delayMinutes: 14 * 24 * 60,
+      subject: "Weekly fishing report",
+      message:
+        "🎣 *Cabo fishing update this week:* Yellowfin tuna and dorado are biting strong offshore. Marlin season is approaching — October is the peak. If you're planning a trip soon, now is a great time to lock in a date. Reply anytime and we'll help you pick the right boat.",
+    },
+    {
+      channel: "whatsapp",
+      delayMinutes: 21 * 24 * 60,
+      subject: "Best season for your target species",
+      message:
+        "🌊 Did you know Cabo San Lucas has world-class fishing nearly year-round? Marlin peak Jun-Nov, Tuna May-Dec, Dorado Jun-Oct. We can match your travel dates to the best bite window. Want us to check what's running when you're here?",
+    },
+    {
+      channel: "email",
+      delayMinutes: 30 * 24 * 60,
+      subject: "Last chance — limited availability in Cabo",
+      message:
+        "We still have a few open dates on our fleet. Availability fills fast in peak season and we wanted to give you the first look before we open it up. If you're still thinking about a Cabo trip, reply and we'll hold a date for you.",
+    },
   ],
 }
 

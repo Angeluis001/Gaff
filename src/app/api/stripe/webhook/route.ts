@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 
 import { getPendingBookingForCheckout } from "@/lib/booking/create-booking"
 import { db } from "@/lib/db"
-import { boatAvailability, bookings, leads } from "@/lib/db/schema"
+import { boatAvailability, bookings, leadFollowupSteps, leads } from "@/lib/db/schema"
 import { sendBookingConfirmationEmail } from "@/lib/resend"
 import { getStripeServerClient } from "@/lib/stripe"
 import { sendWhatsAppMessage } from "@/lib/whatsapp"
@@ -127,6 +127,24 @@ export async function POST(request: Request) {
             console.error(`[webhook] notification[${i}] failed:`, r.reason)
           }
         })
+
+        // Schedule upsell message 48h after booking confirmed
+        const upsellDueAt = new Date(Date.now() + 48 * 60 * 60 * 1000)
+        await db.insert(leadFollowupSteps).values({
+          leadId: lead.id,
+          classification: lead.classification ?? "warm",
+          channel: "whatsapp",
+          subject: "Upsell post-booking",
+          message:
+            `🎣 *Your GAFF trip is confirmed — want to make it even better?*\n\n` +
+            `Hi ${customerName}, we have a few options to upgrade your experience on ${tripDate}:\n\n` +
+            `📸 *Professional photography* — high-quality fishing shots to keep forever\n` +
+            `🦐 *Premium live bait package* — gives you the edge for marlin and tuna\n` +
+            `🌅 *Early departure (5:30 AM)* — more time on the water, better bite\n\n` +
+            `Interested in any of these? Just reply and we'll add it to your trip.`,
+          stepIndex: 99,
+          dueAt: upsellDueAt,
+        }).onConflictDoNothing()
       }
     }
 
