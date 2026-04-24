@@ -266,25 +266,28 @@ OPENCLAW_CHAT_MODEL=      # Modelo para agente chat (default: gpt-4o)
 ## Checklist de ejecución
 
 ### F3 — Cold lead nurturing extendido
-- [ ] Modificar `scheduleLeadFollowUps()` en `src/lib/chat/follow-up.ts` — agregar steps 2, 3, 4 para cold
+- [x] Modificar `scheduleLeadFollowUps()` en `src/lib/chat/follow-up.ts` — agregar steps 2, 3, 4 para cold
 - [ ] Verificar en admin que nuevos steps aparecen en lead_followup_steps
 
 ### F4 — Upsell post-booking
-- [ ] Modificar Stripe webhook para crear followup_step de upsell a T+48h
+- [x] Modificar Stripe webhook para crear followup_step de upsell a T+48h
 - [ ] Probar con seed booking que el step se crea correctamente
 
 ### F2 — Review collection
-- [ ] Migration: agregar `review_request_sent_at` a bookings
-- [ ] Crear `src/app/api/cron/trips/review-request/route.ts`
-- [ ] Agregar a `vercel.json` cron schedule
+- [x] Migration 0004: agregar `review_request_sent_at` a bookings — aplicada en Neon
+- [x] Crear `src/app/api/cron/trips/review-request/route.ts`
+- [x] Agregar a `vercel.json` cron schedule (`0 15 * * *`)
 - [ ] Probar con booking completed de ayer
 
 ### F5 + F1 — Agente conversacional + escalación
-- [ ] Migration: crear tabla `whatsapp_sessions`
-- [ ] Crear schema Drizzle `src/lib/db/schema/whatsapp-sessions.ts`
-- [ ] Crear `src/lib/chat/conversation.ts` — getOrCreate, appendMessage
-- [ ] Crear `src/lib/agents/chat-agent.ts` — GPT-4o con 6 tools
-- [ ] Modificar `src/app/api/channels/openclaw/route.ts` — llamar agente y enviar reply
-- [ ] Agregar nuevas env vars a `.env.example` y Vercel
+- [x] Migration 0003: crear tabla `whatsapp_sessions` — aplicada en Neon
+- [x] Crear schema Drizzle `src/lib/db/schema/whatsapp-sessions.ts`
+- [x] Crear `src/lib/chat/conversation.ts` — getOrCreate, appendMessage, updateStatus
+- [x] Crear `src/lib/agents/chat-agent.ts` — GPT-4o con 5 tools
+- [x] Modificar `src/app/api/channels/openclaw/route.ts` — llamar agente y enviar reply
+- [x] Env vars en Vercel: `OPENCLAW_CHAT_MODEL=gpt-4o`, `ADMIN_WHATSAPP_NUMBER=6241000381`
 - [ ] E2E test: enviar WhatsApp "do you have availability on May 10?" y verificar respuesta
 - [ ] E2E test: enviar "I need to cancel" y verificar escalación + alerta admin
+
+### ⏳ Pendiente
+- [ ] **GOOGLE_REVIEW_URL** — agregar en Vercel una vez que esté disponible el link de Google Business Profile de GAFF
