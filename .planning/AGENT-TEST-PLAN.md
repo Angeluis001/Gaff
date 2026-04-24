@@ -112,7 +112,7 @@ Your comments are invaluable, and we will address these concerns with our crew."
 - [ ] `TRIPADVISOR_REVIEWS_URL`, `GOOGLE_REVIEWS_URL`, `YELP_REVIEWS_URL` not set — external polling is a no-op
 - [ ] `sync.ts` default model changed from `gpt-4o` → `gpt-4o-mini` (project key lacks gpt-4o access)
 - [ ] Standalone response generation not wired to a cron — only fires during poll sync flow
-- [ ] Need to verify `/admin/reviews` shows draft responses in UI
+- [x] `/admin/reviews` now shows draft responses + Approve button (deployed 2026-04-22)
 
 #### Next steps
 - Add a `POST /api/cron/reviews/respond` endpoint that processes pending reviews independently of polling
@@ -226,14 +226,14 @@ alertDigestSent: true
 ### Agent A — Lead Follow-up Nurturing
 
 **Status:** ✅ Built & deployed (2026-04-22)  
-**Endpoint:** `POST /api/cron/leads/followup` — runs hourly via vercel.json  
+**Endpoint:** `POST /api/cron/leads/followup` — runs daily at 09:00 UTC via vercel.json  
 **Logic:**
-- Scans Redis for `gaff:lead-followups:*` keys where `dueAt <= now`
+- Queries `lead_followup_steps` (Neon) where `sentAt IS NULL AND dueAt <= now`
 - Skips leads with status `deposit_paid / completed / cancelled`
 - Sends WhatsApp (OpenClaw) or email (Resend + LeadFollowUpEmail template)
-- Deletes Redis key after send, logs to `leadActivities`
+- Sets `sentAt = now` after send, logs to `leadActivities`
 
-**Pending test:** Verify end-to-end with a hot lead + real follow-up delay
+**Tested:** ✅ 2026-04-22 — 2 overdue steps (email + WhatsApp) processed, dedup confirmed (second run = 0)
 
 ---
 
@@ -242,25 +242,27 @@ alertDigestSent: true
 **Status:** ✅ Built & deployed (2026-04-22)  
 **Endpoint:** `POST /api/cron/trips/remind` — runs daily at 14:00 UTC (8am MX)  
 **Logic:**
-- Queries `deposit_paid` bookings with `date = today + 2 days`
+- Queries `deposit_paid` bookings with `date = today + 2 days` AND `reminderSentAt IS NULL`
 - JOINs leads (phone/WhatsApp) + boats (name, captain)
 - Sends WhatsApp with boat, captain, Dock F meeting point, gear list, weather link
-- Deduplicates via Redis key `gaff:trip-reminder:{bookingId}` (3d TTL)
+- Deduplicates via `bookings.reminderSentAt` column (Neon — no Redis)
 
-**Pending test:** Create booking dated today+2, run cron, verify WhatsApp delivery
+**Tested:** ✅ 2026-04-22 — booking 4b4936fb (2026-04-24, Sarah, Full Day) → WhatsApp sent, dedup confirmed (second run = 0)
 
 ---
 
 ### Agent C — SEO Content Writer (GPT-4o-mini upgrade)
 
-**Status:** 🔴 Not built — next priority  
-**Why:** Current SEO agent generates placeholder text, not real publishable content.
+**Status:** ✅ Built & deployed (2026-04-22)  
+**Endpoint:** `POST /api/cron/seo/generate`  
+**Logic:**
+- Calls GPT-4o-mini for blog posts (800-1000 words, keyword-optimized)
+- Weekly keyword rotation by ISO week number (prevents same keyword every week)
+- Duplicate prevention: skips if same keyword already has a post this week
+- Falls back to template if OpenAI unavailable
+- `metadata.generatedBy: "gpt-4o-mini" | "template"` for observability
 
-**Design:**
-- Upgrade `src/lib/seo/generator.ts` to call GPT-4o-mini
-- Blog post: 800-1200 words, keyword-optimized, Cabo fishing context
-- Fishing report: pull actual trip data (species, conditions, boat used), generate narrative
-- System prompt: "You are an SEO content writer for GAFF All Fishing, a premium sport fishing charter in Cabo San Lucas. Write in a knowledgeable, premium tone targeting US sport fishing tourists."
+**Tested:** GPT-4o-mini confirmed generating real blog posts (`generatedBy: "gpt-4o-mini"`)
 
 ---
 
@@ -274,10 +276,10 @@ alertDigestSent: true
 | 4. SEO Generation | ⚠️ | ❌ Template only | ✅ | Agent C not yet built |
 | 5. Social Publishing | ⚠️ | N/A | ❌ No Meta/TikTok tokens | Missing credentials |
 | 6. Analytics | ✅ | N/A | ✅ Resend | Thresholds not tuned |
-| A. Lead Follow-up | ✅ Built | ✅ Email + WhatsApp | ✅ | E2E test pending |
-| B. Pre-trip Reminder | ✅ Built | ✅ WhatsApp | ✅ | E2E test pending |
-| C. SEO Writer | 🔴 Not built | — | — | Next to build |
+| A. Lead Follow-up | ✅ Tested | ✅ Email + WhatsApp | ✅ Neon | — |
+| B. Pre-trip Reminder | ✅ Tested | ✅ WhatsApp | ✅ Neon | — |
+| C. SEO Writer | ✅ Built | ✅ GPT-4o-mini | ✅ | Confirmed working |
 
-**Overall:** 5/6 original agents tested · 2 new agents built · 1 new agent pending
+**Overall:** 5/6 original agents tested · 3 new agents built & E2E tested ✅
 
-**Next priority:** Build Agent A (Lead Follow-up Nurturing) — highest impact gap.
+**Remaining:** Agent 2 deep test (full booking via WhatsApp) · Agent 5 deferred (Meta/TikTok credentials needed)

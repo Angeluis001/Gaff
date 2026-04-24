@@ -245,7 +245,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
       eyebrow: "Social Proof",
       title: "A reputation built trip after trip",
       subtitle:
-        "Wave 2 will add guest stories, certification logos, and the reputation signals that push indecisive visitors into action.",
+        "Real stories from anglers who've fished the waters of Cabo San Lucas with our crew. Every review earned, every trip unforgettable.",
       stats: [
         { value: "500+", label: "Trips" },
         { value: "4.9", label: "Average Rating" },
@@ -273,7 +273,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
       eyebrow: "Crew",
       title: "Captains with local instinct and guest-first hospitality",
       subtitle:
-        "Wave 2 introduces the captain cards, specialties, and certifications that help visitors trust the crew behind the trip.",
+        "Years on the water, deep local knowledge, and a genuine commitment to making every charter worth the trip from wherever you call home.",
       members: [
         {
           name: "Captain Luis",
@@ -304,7 +304,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
       eyebrow: "Ready To Go",
       title: "Reserve your best day in Cabo",
       subtitle:
-        "Wave 2 will replace this placeholder with the final panoramic CTA and the conversion close.",
+        "Availability moves fast during peak season. Lock in your date today and we'll handle everything from there.",
       primaryCta: "See availability",
       secondaryCta: "Contact the crew",
     },
@@ -421,7 +421,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
       eyebrow: "Prueba Social",
       title: "Una reputacion construida viaje tras viaje",
       subtitle:
-        "La Ola 2 agregara historias de clientes, logos de certificacion y senales de reputacion para impulsar la conversion.",
+        "Historias reales de anglers que han pescado en Los Cabos con nuestra tripulacion. Cada resena ganada, cada viaje inolvidable.",
       stats: [
         { value: "500+", label: "Viajes" },
         { value: "4.9", label: "Calificacion promedio" },
@@ -449,7 +449,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
       eyebrow: "Tripulacion",
       title: "Capitanes con instinto local y hospitalidad real",
       subtitle:
-        "La Ola 2 presentara las tarjetas del equipo, especialidades y certificaciones que generan confianza antes de reservar.",
+        "Anos de experiencia en el agua, conocimiento local profundo y compromiso genuino de hacer de cada charter una experiencia memorable.",
       members: [
         {
           name: "Capitan Luis",
@@ -480,7 +480,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
       eyebrow: "Listo Para Zarpar",
       title: "Reserva tu mejor dia en Cabo",
       subtitle:
-        "La Ola 2 reemplazara este placeholder con el cierre panoramico y el CTA final de conversion.",
+        "La disponibilidad se llena rapido en temporada alta. Reserva tu fecha hoy y nosotros nos encargamos del resto.",
       primaryCta: "Ver disponibilidad",
       secondaryCta: "Contactar a la tripulacion",
     },

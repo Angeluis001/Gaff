@@ -4,7 +4,7 @@ import { MetricCard } from "@/components/admin/MetricCard"
 import { AdminStatGrid } from "@/components/admin/AdminStatGrid"
 import { StatusBadge } from "@/components/admin/StatusBadge"
 import { ApproveReviewButton } from "@/components/admin/ApproveReviewButton"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { getAdminReviewsOverview } from "@/lib/admin/reviews"
 
 const STATUS_TONE = {

@@ -92,8 +92,7 @@ export function FAQSection() {
               className="mt-6 flex flex-col gap-3 rounded-[1.5rem] border border-gold/10 bg-white/3 p-5 sm:flex-row sm:items-center sm:justify-between"
             >
               <p className="text-sm leading-7 text-sand/70">
-                Can’t find your answer? Launch the same contract the future Botpress
-                bridge listens for.
+                Can’t find what you’re looking for? Our assistant is ready to help with availability, trip planning, and anything else.
               </p>
               <Button
                 type="button"

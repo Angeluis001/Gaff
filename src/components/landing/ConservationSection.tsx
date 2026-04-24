@@ -33,10 +33,9 @@ export function ConservationSection() {
             )}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,17,30,0.1)_0%,rgba(7,17,30,0.74)_100%)]" />
             <div className="absolute bottom-6 left-6 right-6 rounded-[1.5rem] border border-white/10 bg-navy/58 p-5 backdrop-blur">
-              <p className="section-kicker">Cloudinary Storytelling</p>
+              <p className="section-kicker">Conservation in Action</p>
               <p className="mt-3 font-heading text-3xl text-white">
-                Release footage, certification cues, and a premium fallback when no
-                cloudinary media is configured.
+                Every tagged marlin released is a data point for science and a victory for the future of sport fishing in Los Cabos.
               </p>
             </div>
           </div>

@@ -223,9 +223,7 @@ export function HeroSection() {
                   Fast dock departure, tailored crews, and blue-water confidence.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-sand/66">
-                  Cloudinary-backed hero media stays optimized for launch, and the
-                  poster fallback keeps the page premium even when the video budget
-                  cannot be confirmed.
+                  From the marina by 6:30 AM, into the blue water where marlin, tuna, and dorado are waiting. Every GAFF trip is built around your best day offshore.
                 </p>
               </div>
             </div>
