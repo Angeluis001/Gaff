@@ -203,7 +203,7 @@ export function AvailabilityCalendarSection() {
   }
 
   return (
-    <section id="availability" className="landing-section scroll-mt-28">
+    <section id="availability" className="landing-section scroll-mt-24">
       <div className="landing-grid">
         <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">

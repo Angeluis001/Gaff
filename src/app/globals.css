@@ -130,7 +130,7 @@
   }
   html {
     @apply font-sans;
-    scroll-padding-top: 6rem;
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground;

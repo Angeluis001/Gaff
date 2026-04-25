@@ -5,7 +5,7 @@ import { footerSocialLinks } from "@/lib/landing-data"
 
 export function Footer() {
   return (
-    <footer id="footer" className="landing-section scroll-mt-28 pt-0">
+    <footer id="footer" className="landing-section scroll-mt-24 pt-0">
       <div className="landing-grid">
         <div className="glass-panel grid gap-6 overflow-hidden rounded-[2rem] border border-gold/10 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="overflow-hidden rounded-[1.75rem] border border-gold/10">

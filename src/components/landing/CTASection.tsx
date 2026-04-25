@@ -23,7 +23,7 @@ export function CTASection() {
   const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
   return (
-    <section id="cta" className="landing-section scroll-mt-28 pt-0">
+    <section id="cta" className="landing-section scroll-mt-24 pt-0">
       <div className="landing-grid">
         <motion.div
           className="glass-panel relative overflow-hidden rounded-[2rem] border border-gold/10"

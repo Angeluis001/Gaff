@@ -12,7 +12,7 @@ export function FishingSeasonsSection() {
   const currentMonth = new Date().getMonth() + 1
 
   return (
-    <section id="seasons" className="landing-section scroll-mt-28 pt-0">
+    <section id="seasons" className="landing-section scroll-mt-24 pt-0">
       <div className="landing-grid">
         <div className="mb-10 max-w-3xl">
           <p className="section-kicker">{messages.seasons.eyebrow}</p>

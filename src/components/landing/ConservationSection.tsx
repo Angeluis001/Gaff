@@ -14,7 +14,7 @@ export function ConservationSection() {
   const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
   return (
-    <section id="conservation" className="landing-section scroll-mt-28">
+    <section id="conservation" className="landing-section scroll-mt-24">
       <div className="landing-grid">
         <div className="glass-panel grid overflow-hidden rounded-[2rem] border border-gold/10 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="relative min-h-[24rem] border-b border-gold/10 lg:min-h-[32rem] lg:border-b-0 lg:border-r">

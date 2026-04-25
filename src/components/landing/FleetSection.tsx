@@ -145,7 +145,7 @@ export function FleetSection() {
   ])
 
   return (
-    <section id="fleet" className="landing-section scroll-mt-28">
+    <section id="fleet" className="landing-section scroll-mt-24">
       <div className="landing-grid">
         <div className="mb-10 max-w-3xl">
           <p className="section-kicker">{messages.fleet.eyebrow}</p>

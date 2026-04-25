@@ -23,7 +23,7 @@ export function CrewSection() {
   const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
   return (
-    <section id="crew" className="landing-section scroll-mt-28 pt-0">
+    <section id="crew" className="landing-section scroll-mt-24 pt-0">
       <div className="landing-grid">
         <div className="mb-10 max-w-3xl">
           <p className="section-kicker">{messages.crew.eyebrow}</p>
