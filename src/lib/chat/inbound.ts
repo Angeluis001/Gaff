@@ -146,15 +146,21 @@ export async function ingestInboundLead(input: InboundLeadInput): Promise<Inboun
           .returning()
       )[0]
 
+  const msgPreview = input.message
+    ? `"${input.message.slice(0, 300)}${input.message.length > 300 ? "…" : ""}"`
+    : null
+
   const activity = (
     await db
       .insert(leadActivities)
       .values({
         leadId: lead.id,
         type: "note",
-        description: existingLead
-          ? `Inbound ${input.source} conversation updated and normalized.`
-          : `Inbound ${input.source} lead captured and normalized.`,
+        description: msgPreview
+          ? `📩 Customer (${input.source}): ${msgPreview}`
+          : existingLead
+            ? `Inbound ${input.source} message received.`
+            : `Inbound ${input.source} lead captured.`,
         metadata: {
           source: input.source,
           conversationId: input.conversationId,

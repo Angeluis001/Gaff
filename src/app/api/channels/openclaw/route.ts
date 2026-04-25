@@ -62,6 +62,15 @@ export async function POST(request: Request) {
               timestamp: new Date().toISOString(),
             })
 
+            const replyPreview = `"${agentResult.reply.slice(0, 300)}${agentResult.reply.length > 300 ? "…" : ""}"`
+            await db.insert(leadActivities).values({
+              leadId: lead.id,
+              type: "whatsapp_sent",
+              description: `🤖 Bot (WhatsApp): ${replyPreview}`,
+              metadata: { sessionId: session.id, channel: "whatsapp" },
+              agentId: "chat-agent",
+            })
+
             replied = true
           }
 
