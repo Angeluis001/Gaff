@@ -5,7 +5,7 @@ import { ArrowRight, Users } from "lucide-react"
 import { CldImage } from "next-cloudinary"
 import useEmblaCarousel from "embla-carousel-react"
 import Autoplay from "embla-carousel-autoplay"
-import { motion } from "framer-motion"
+import { motion, type Variants } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -20,6 +20,16 @@ import { cn } from "@/lib/utils"
 
 type Boat = ReturnType<typeof useLanguage>["messages"]["fleet"]["boats"][number]
 
+const gridVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+}
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 36 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+}
+
 function FleetCard({
   boat,
   interactive = false,
@@ -32,10 +42,16 @@ function FleetCard({
 
   return (
     <motion.div
-      whileInView={{ opacity: 1, y: 0 }}
-      initial={{ opacity: 0, y: 36 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.55, ease: "easeOut" }}
+      variants={interactive ? cardVariants : undefined}
+      whileInView={interactive ? undefined : { opacity: 1, y: 0 }}
+      initial={interactive ? undefined : { opacity: 0, y: 36 }}
+      viewport={interactive ? undefined : { once: true, amount: 0.2 }}
+      transition={interactive ? undefined : { duration: 0.55, ease: "easeOut" }}
+      whileHover={
+        interactive
+          ? { boxShadow: "0 24px 64px rgba(212,168,67,0.15)" }
+          : { y: -6, transition: { type: "spring" as const, stiffness: 280, damping: 18 } }
+      }
       className="h-full"
       onMouseMove={(event) => {
         if (!interactive) {
@@ -137,11 +153,17 @@ export function FleetSection() {
           <p className="section-copy mt-5">{messages.fleet.subtitle}</p>
         </div>
 
-        <div className="hidden grid-cols-4 gap-6 lg:grid">
+        <motion.div
+          className="hidden grid-cols-4 gap-6 lg:grid"
+          variants={gridVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+        >
           {messages.fleet.boats.map((boat) => (
             <FleetCard key={boat.name} boat={boat} interactive />
           ))}
-        </div>
+        </motion.div>
 
         <div className="lg:hidden">
           <div className="overflow-hidden" ref={emblaRef}>

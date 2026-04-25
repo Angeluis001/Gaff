@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { ArrowRight, Menu } from "lucide-react"
+import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -43,7 +44,10 @@ export function Navbar() {
   }, [])
 
   return (
-    <header
+    <motion.header
+      initial={{ y: -80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-500",
         scrolled
@@ -182,6 +186,6 @@ export function Navbar() {
           </Sheet>
         </div>
       </div>
-    </header>
+    </motion.header>
   )
 }

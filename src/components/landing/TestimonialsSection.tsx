@@ -1,12 +1,17 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { motion, useInView } from "framer-motion"
+import { useRef } from "react"
+import { motion, useInView, type Variants } from "framer-motion"
 import { CldImage } from "next-cloudinary"
 
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { certificationLogos, testimonialMedia } from "@/lib/landing-data"
+
+const articleVariants: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+}
 
 function Counter({
   label,
@@ -15,25 +20,29 @@ function Counter({
   label: string
   value: string
 }) {
-  const [display, setDisplay] = useState("0")
   const ref = useRef<HTMLDivElement | null>(null)
   const inView = useInView(ref, { once: true })
 
-  useEffect(() => {
-    if (!inView) {
-      return
-    }
-
-    setDisplay(value)
-  }, [inView, value])
-
   return (
-    <div ref={ref} className="glass-panel rounded-[1.5rem] px-5 py-4">
-      <p className="font-heading text-4xl text-white">{display}</p>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, scale: 0.88 }}
+      animate={inView ? { opacity: 1, scale: 1 } : {}}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className="glass-panel rounded-[1.5rem] px-5 py-4"
+    >
+      <motion.p
+        className="font-heading text-4xl text-white"
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        {value}
+      </motion.p>
       <p className="mt-1 text-xs font-semibold uppercase tracking-[0.28em] text-sand/54">
         {label}
       </p>
-    </div>
+    </motion.div>
   )
 }
 
@@ -61,9 +70,11 @@ export function TestimonialsSection() {
             {testimonialMedia.map((item) => (
               <motion.article
                 key={item.guest}
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                variants={articleVariants}
+                initial="hidden"
+                whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
+                whileHover={{ y: -5, transition: { type: "spring", stiffness: 300, damping: 20 } }}
                 className="glass-panel min-w-[20rem] snap-start overflow-hidden rounded-[1.75rem] border border-gold/10 sm:min-w-[24rem]"
               >
                 <div className="relative h-56 border-b border-gold/10">

@@ -2,11 +2,21 @@
 
 import { Award, Star } from "lucide-react"
 import { CldImage } from "next-cloudinary"
-import { motion } from "framer-motion"
+import { motion, type Variants } from "framer-motion"
 
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { crewProfiles } from "@/lib/landing-data"
+
+const containerVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+}
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+}
 
 export function CrewSection() {
   const { messages } = useLanguage()
@@ -21,13 +31,18 @@ export function CrewSection() {
           <p className="section-copy mt-5">{messages.crew.subtitle}</p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <motion.div
+          className="grid gap-6 lg:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+        >
           {crewProfiles.map((captain) => (
             <motion.article
               key={captain.name}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
+              variants={cardVariants}
+              whileHover={{ y: -6, transition: { type: "spring", stiffness: 300, damping: 20 } }}
               className="glass-panel overflow-hidden rounded-[1.75rem] border border-gold/10"
             >
               <div className="relative h-72">
@@ -78,7 +93,7 @@ export function CrewSection() {
               </div>
             </motion.article>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

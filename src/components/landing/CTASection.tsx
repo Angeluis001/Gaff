@@ -2,10 +2,21 @@
 
 import { ArrowRight } from "lucide-react"
 import { CldImage } from "next-cloudinary"
+import { motion, type Variants } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { ctaMedia } from "@/lib/landing-data"
+
+const contentVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+}
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+}
 
 export function CTASection() {
   const { messages } = useLanguage()
@@ -14,7 +25,13 @@ export function CTASection() {
   return (
     <section id="cta" className="landing-section scroll-mt-28 pt-0">
       <div className="landing-grid">
-        <div className="glass-panel relative overflow-hidden rounded-[2rem] border border-gold/10">
+        <motion.div
+          className="glass-panel relative overflow-hidden rounded-[2rem] border border-gold/10"
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
           <div className="relative min-h-[26rem]">
             {cloudinaryCloudName ? (
               <CldImage
@@ -30,11 +47,23 @@ export function CTASection() {
               <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(98,182,203,0.24),transparent_35%),linear-gradient(180deg,#163753_0%,#07111e_100%)]" />
             )}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,17,30,0.2)_0%,rgba(7,17,30,0.78)_100%)]" />
-            <div className="relative z-10 flex min-h-[26rem] flex-col justify-end p-8 sm:p-10">
-              <p className="section-kicker">{messages.cta.eyebrow}</p>
-              <h2 className="section-title mt-5 max-w-3xl">{messages.cta.title}</h2>
-              <p className="section-copy mt-5 max-w-2xl">{messages.cta.subtitle}</p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <motion.div
+              className="relative z-10 flex min-h-[26rem] flex-col justify-end p-8 sm:p-10"
+              variants={contentVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <motion.p variants={itemVariants} className="section-kicker">
+                {messages.cta.eyebrow}
+              </motion.p>
+              <motion.h2 variants={itemVariants} className="section-title mt-5 max-w-3xl">
+                {messages.cta.title}
+              </motion.h2>
+              <motion.p variants={itemVariants} className="section-copy mt-5 max-w-2xl">
+                {messages.cta.subtitle}
+              </motion.p>
+              <motion.div variants={itemVariants} className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button
                   render={<a href="#availability" />}
                   size="lg"
@@ -51,10 +80,10 @@ export function CTASection() {
                 >
                   {messages.cta.secondaryCta}
                 </Button>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )
