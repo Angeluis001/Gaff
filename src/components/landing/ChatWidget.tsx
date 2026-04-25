@@ -11,6 +11,10 @@ const GREETING: WebChatMessage = {
 }
 
 const STORAGE_KEY = "gaff_chat_history"
+const LEAD_ID_KEY = "gaff_chat_lead_id"
+const CONTACT_KEY = "gaff_chat_contact"
+
+type Contact = { name: string; email: string }
 
 function SendIcon() {
   return (
@@ -46,24 +50,40 @@ function WhatsAppIcon() {
 
 export function ChatWidget() {
   const [open, setOpen] = useState(false)
+  const [step, setStep] = useState<"intro" | "chat">("intro")
+  const [contact, setContact] = useState<Contact>({ name: "", email: "" })
+  const [leadId, setLeadId] = useState<string | null>(null)
   const [messages, setMessages] = useState<WebChatMessage[]>([GREETING])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [handoffUrl, setHandoffUrl] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
 
-  // Persist history (skip greeting)
+  // Restore persisted state
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved) as WebChatMessage[]
-        if (parsed.length > 0) setMessages([GREETING, ...parsed])
+      const savedLeadId = localStorage.getItem(LEAD_ID_KEY)
+      const savedContact = localStorage.getItem(CONTACT_KEY)
+      const savedHistory = localStorage.getItem(STORAGE_KEY)
+
+      if (savedLeadId) setLeadId(savedLeadId)
+      if (savedContact) setContact(JSON.parse(savedContact) as Contact)
+
+      if (savedHistory) {
+        const parsed = JSON.parse(savedHistory) as WebChatMessage[]
+        if (parsed.length > 0) {
+          setMessages([GREETING, ...parsed])
+          setStep("chat") // returning user — skip intro
+        }
+      } else if (savedLeadId) {
+        setStep("chat") // lead already captured
       }
     } catch { /* ignore */ }
   }, [])
 
+  // Persist history
   useEffect(() => {
     try {
       const toSave = messages.filter((m) => m !== GREETING)
@@ -76,8 +96,18 @@ export function ChatWidget() {
   }, [messages, loading])
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 100)
-  }, [open])
+    if (!open) return
+    if (step === "intro") setTimeout(() => nameRef.current?.focus(), 100)
+    if (step === "chat") setTimeout(() => inputRef.current?.focus(), 100)
+  }, [open, step])
+
+  function startChat(withContact: Contact | null) {
+    if (withContact?.name) {
+      setContact(withContact)
+      try { localStorage.setItem(CONTACT_KEY, JSON.stringify(withContact)) } catch { /* ignore */ }
+    }
+    setStep("chat")
+  }
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -92,15 +122,33 @@ export function ChatWidget() {
 
     try {
       const history = next.filter((m) => m !== GREETING)
+      const body: Record<string, unknown> = {
+        history: history.slice(0, -1),
+        message: text,
+      }
+
+      if (leadId) {
+        body.leadId = leadId
+      } else if (contact.name) {
+        body.contact = { name: contact.name, email: contact.email || undefined }
+      }
+
       const res = await fetch("/api/chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ history: history.slice(0, -1), message: text }),
+        body: JSON.stringify(body),
       })
-      const data = (await res.json()) as { reply?: string; handoffUrl?: string }
+      const data = (await res.json()) as { reply?: string; handoffUrl?: string; leadId?: string }
+
       const reply = data.reply ?? "Sorry, something went wrong. Please try again. 🎣"
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
       if (data.handoffUrl) setHandoffUrl(data.handoffUrl)
+
+      // Persist leadId returned from API
+      if (data.leadId && !leadId) {
+        setLeadId(data.leadId)
+        try { localStorage.setItem(LEAD_ID_KEY, data.leadId) } catch { /* ignore */ }
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -116,10 +164,11 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex w-[360px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0b1628] shadow-2xl"
-          style={{ height: "520px" }}>
+        <div
+          className="fixed bottom-24 right-6 z-50 flex w-[360px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0b1628] shadow-2xl"
+          style={{ height: "520px" }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>
@@ -147,67 +196,119 @@ export function ChatWidget() {
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                    m.role === "user"
-                      ? "bg-amber-500 text-black"
-                      : "bg-white/10 text-white/90"
-                  }`}
+          {step === "intro" ? (
+            /* Intro: collect name + email */
+            <div className="flex flex-1 flex-col justify-center gap-6 px-6">
+              <div>
+                <p className="text-base font-semibold text-white">Plan your Cabo trip 🎣</p>
+                <p className="mt-1 text-sm text-white/50">
+                  Share your name so the assistant can personalize your experience.
+                </p>
+              </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  startChat(contact.name.trim() ? contact : null)
+                }}
+                className="flex flex-col gap-3"
+              >
+                <input
+                  ref={nameRef}
+                  type="text"
+                  placeholder="Your name *"
+                  required
+                  value={contact.name}
+                  onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-amber-500/50 focus:outline-none"
+                />
+                <input
+                  type="email"
+                  placeholder="Email (optional — for follow-up)"
+                  value={contact.email}
+                  onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-amber-500/50 focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={!contact.name.trim()}
+                  className="rounded-xl bg-amber-500 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-400 disabled:opacity-40"
                 >
-                  {m.content}
-                </div>
+                  Start chatting
+                </button>
+              </form>
+              <button
+                type="button"
+                onClick={() => startChat(null)}
+                className="text-xs text-white/30 underline transition hover:text-white/60"
+              >
+                Skip — chat anonymously
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                {messages.map((m, i) => (
+                  <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                        m.role === "user"
+                          ? "bg-amber-500 text-black"
+                          : "bg-white/10 text-white/90"
+                      }`}
+                    >
+                      {m.content}
+                    </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl bg-white/10 px-4 py-3">
+                      <span className="flex gap-1">
+                        <span className="size-1.5 animate-bounce rounded-full bg-white/50 [animation-delay:0ms]" />
+                        <span className="size-1.5 animate-bounce rounded-full bg-white/50 [animation-delay:150ms]" />
+                        <span className="size-1.5 animate-bounce rounded-full bg-white/50 [animation-delay:300ms]" />
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {handoffUrl && (
+                  <div className="flex justify-start">
+                    <a
+                      href={handoffUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-2xl bg-[#25D366]/15 px-4 py-3 text-sm text-[#25D366] transition hover:bg-[#25D366]/25"
+                    >
+                      <WhatsAppIcon />
+                      Continue this conversation on WhatsApp →
+                    </a>
+                  </div>
+                )}
+                <div ref={bottomRef} />
               </div>
-            ))}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl bg-white/10 px-4 py-3">
-                  <span className="flex gap-1">
-                    <span className="size-1.5 animate-bounce rounded-full bg-white/50 [animation-delay:0ms]" />
-                    <span className="size-1.5 animate-bounce rounded-full bg-white/50 [animation-delay:150ms]" />
-                    <span className="size-1.5 animate-bounce rounded-full bg-white/50 [animation-delay:300ms]" />
-                  </span>
-                </div>
-              </div>
-            )}
-            {handoffUrl && (
-              <div className="flex justify-start">
-                <a
-                  href={handoffUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-2xl bg-[#25D366]/15 px-4 py-3 text-sm text-[#25D366] transition hover:bg-[#25D366]/25"
-                >
-                  <WhatsAppIcon />
-                  Continue this conversation on WhatsApp →
-                </a>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
 
-          {/* Input */}
-          <form onSubmit={handleSend} className="flex gap-2 border-t border-white/10 p-3">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about boats, dates, pricing..."
-              disabled={loading}
-              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-amber-500/40 focus:outline-none disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-black transition hover:bg-amber-400 disabled:opacity-40"
-              aria-label="Send"
-            >
-              <SendIcon />
-            </button>
-          </form>
+              {/* Input */}
+              <form onSubmit={handleSend} className="flex gap-2 border-t border-white/10 p-3">
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask about boats, dates, pricing..."
+                  disabled={loading}
+                  className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-amber-500/40 focus:outline-none disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={loading || !input.trim()}
+                  className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-black transition hover:bg-amber-400 disabled:opacity-40"
+                  aria-label="Send"
+                >
+                  <SendIcon />
+                </button>
+              </form>
+            </>
+          )}
         </div>
       )}
 
