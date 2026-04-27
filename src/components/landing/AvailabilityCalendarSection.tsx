@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { CalendarSync, LoaderCircle } from "lucide-react"
+import { ArrowRight, CalendarSync, LoaderCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -190,7 +190,6 @@ export function AvailabilityCalendarSection() {
     }
 
     setSelectedDate(day)
-    setDialogOpen(true)
     window.dispatchEvent(
       new CustomEvent("gaff:booking-started", {
         detail: {
@@ -273,36 +272,121 @@ export function AvailabilityCalendarSection() {
               />
             </div>
 
-            <div className="space-y-4 rounded-[1.5rem] border border-gold/10 bg-white/3 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold/76">
-                Live status
-              </p>
+            <div className="flex flex-col gap-5 rounded-[1.5rem] border border-gold/10 bg-white/3 p-5">
               {loading ? (
                 <div className="flex items-center gap-2 text-sm text-sand/72">
                   <LoaderCircle className="size-4 animate-spin" />
-                  Syncing latest live availability
+                  Syncing live availability…
                 </div>
+              ) : selectedDate ? (
+                <>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold/76">
+                      Your selection
+                    </p>
+                    <p className="mt-3 font-heading text-3xl text-white">
+                      {format(selectedDate, "MMMM d")}
+                    </p>
+                    <p className="text-sm text-sand/56">{format(selectedDate, "EEEE · yyyy")}</p>
+                  </div>
+
+                  {selectedBoatForDate ? (
+                    <>
+                      <div className="space-y-3 rounded-[1.25rem] border border-gold/10 bg-white/4 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold/70">
+                          Suggested boat
+                        </p>
+                        <div>
+                          <p className="font-semibold text-white">{selectedBoatForDate.name}</p>
+                          <p className="mt-0.5 text-xs text-sand/58">
+                            Up to {selectedBoatForDate.capacity} guests ·{" "}
+                            {selectedBoatForDate.category}
+                          </p>
+                        </div>
+                        {(selectedBoatForDate.priceHalfDay ||
+                          selectedBoatForDate.priceFullDay) && (
+                          <div className="grid grid-cols-2 gap-2 pt-1">
+                            {selectedBoatForDate.priceHalfDay && (
+                              <div className="rounded-[0.875rem] border border-gold/10 bg-white/3 px-3 py-2 text-center">
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-sand/54">
+                                  Half Day
+                                </p>
+                                <p className="mt-1 text-sm font-semibold text-white">
+                                  ${selectedBoatForDate.priceHalfDay}
+                                </p>
+                              </div>
+                            )}
+                            {selectedBoatForDate.priceFullDay && (
+                              <div className="rounded-[0.875rem] border border-gold/10 bg-white/3 px-3 py-2 text-center">
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-sand/54">
+                                  Full Day
+                                </p>
+                                <p className="mt-1 text-sm font-semibold text-white">
+                                  ${selectedBoatForDate.priceFullDay}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <Button
+                        type="button"
+                        className="w-full rounded-full bg-gold text-navy hover:bg-gold/90"
+                        onClick={() => setDialogOpen(true)}
+                      >
+                        Reserve this date
+                        <ArrowRight className="size-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <p className="text-sm leading-7 text-sand/62">
+                      No boats available for this date with the current filter. Try another date or
+                      change the boat category.
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    className="text-center text-xs text-sand/48 transition hover:text-sand/80"
+                    onClick={() => setSelectedDate(undefined)}
+                  >
+                    ← Choose a different date
+                  </button>
+                </>
               ) : (
                 <>
-                  <div className="flex items-center gap-3 text-sm text-sand/74">
-                    <span className="h-3 w-3 rounded-full bg-teal" />
-                    {messages.availability.available}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold/76">
+                      Live status
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-sand/74">
-                    <span className="h-3 w-3 rounded-full bg-gold" />
-                    {messages.availability.limited}
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 text-sm text-sand/74">
+                      <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-teal" />
+                      {messages.availability.available}
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-sand/74">
+                      <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-gold" />
+                      {messages.availability.limited}
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-sand/74">
+                      <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-coral" />
+                      {messages.availability.booked}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-sand/74">
-                    <span className="h-3 w-3 rounded-full bg-coral" />
-                    {messages.availability.booked}
+
+                  <div className="border-t border-gold/10 pt-4">
+                    <p className="font-heading text-3xl text-white">
+                      {availableDates.filter((d) => d >= new Date()).length}
+                    </p>
+                    <p className="mt-1 text-xs text-sand/54">open dates available</p>
                   </div>
-                  <div className="pt-4 text-sm leading-7 text-sand/70">
-                    Active filter: <span className="font-semibold text-white">{activeBoat}</span>
-                  </div>
-                  <div className="text-sm leading-7 text-sand/62">
-                    Updated from <code>/api/booking/availability</code> and refreshed every 60
-                    seconds.
-                  </div>
+
+                  <p className="text-sm leading-7 text-sand/60">
+                    Select a date on the calendar to see available boats and pricing.
+                  </p>
                 </>
               )}
             </div>
@@ -314,25 +398,29 @@ export function AvailabilityCalendarSection() {
         <DialogContent className="border border-gold/12 bg-navy text-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading text-3xl text-white">
-              Booking flow ready
+              {selectedDate ? format(selectedDate, "MMMM d, yyyy") : "Confirm your trip"}
             </DialogTitle>
             <DialogDescription className="text-sand/72">
-              Continue into the real booking flow with your selected date and boat.
+              You&apos;re one step away from securing your Los Cabos fishing charter.
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-[1.5rem] border border-gold/10 bg-white/3 p-5 text-sm leading-7 text-sand/76">
+          <div className="space-y-2 rounded-[1.5rem] border border-gold/10 bg-white/3 p-5 text-sm leading-7 text-sand/76">
             <p>
-              <span className="font-semibold text-white">Date:</span>{" "}
-              {selectedDate ? format(selectedDate, "MMMM d, yyyy") : "Not selected"}
+              <span className="font-semibold text-white">Boat:</span>{" "}
+              {selectedBoatForDate?.name ?? activeBoat}
             </p>
-            <p>
-              <span className="font-semibold text-white">Boat filter:</span>{" "}
-              {activeBoat}
-            </p>
-            <p>
-              <span className="font-semibold text-white">Suggested boat:</span>{" "}
-              {selectedBoatForDate?.name ?? "Choose a specific filter if this day looks busy"}
-            </p>
+            {selectedBoatForDate && (
+              <p>
+                <span className="font-semibold text-white">Capacity:</span>{" "}
+                Up to {selectedBoatForDate.capacity} guests
+              </p>
+            )}
+            {selectedBoatForDate?.priceFullDay && (
+              <p>
+                <span className="font-semibold text-white">Full day from:</span>{" "}
+                ${selectedBoatForDate.priceFullDay}
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button
@@ -340,7 +428,7 @@ export function AvailabilityCalendarSection() {
               variant="outline"
               className="rounded-full border-gold/20 bg-white/4 text-white hover:bg-white/8"
             >
-              Ask a question first
+              Have a question?
             </Button>
             <Button
               type="button"
