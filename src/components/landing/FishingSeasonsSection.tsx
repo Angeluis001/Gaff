@@ -5,7 +5,11 @@ import { motion } from "framer-motion"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useLanguage } from "@/contexts/LanguageContext"
 
-const monthLabels = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
+const MONTH_LABELS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+]
 
 export function FishingSeasonsSection() {
   const { messages } = useLanguage()
@@ -20,99 +24,123 @@ export function FishingSeasonsSection() {
           <p className="section-copy mt-5">{messages.seasons.subtitle}</p>
         </div>
 
-        <div className="glass-panel overflow-hidden rounded-[2rem] border border-gold/10 p-6 sm:p-8">
+        <div className="glass-panel overflow-hidden rounded-[2rem] border border-gold/10">
+          {/* Legend */}
+          <div className="flex flex-wrap items-center gap-5 border-b border-gold/8 px-6 py-4 sm:px-8">
+            <div className="flex items-center gap-2 text-xs text-sand/60">
+              <span className="h-2.5 w-6 rounded-full bg-teal/80 shadow-[0_0_8px_rgba(98,182,203,0.5)]" />
+              Active season
+            </div>
+            <div className="flex items-center gap-2 text-xs text-sand/60">
+              <span className="h-2.5 w-6 rounded-full bg-gold shadow-[0_0_8px_rgba(212,168,67,0.5)]" />
+              This month
+            </div>
+            <div className="flex items-center gap-2 text-xs text-sand/60">
+              <span className="h-2.5 w-6 rounded-full border border-white/12 bg-white/6" />
+              Off season
+            </div>
+          </div>
+
           <TooltipProvider>
-            <div className="space-y-6">
-              <div className="grid grid-cols-[8rem_repeat(12,minmax(0,1fr))] gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-sand/54">
-                <span>Species</span>
-                {monthLabels.map((month) => (
-                  <span key={month} className="text-center">
-                    {month}
+            <div className="overflow-x-auto px-6 py-6 sm:px-8">
+              <div className="min-w-[38rem]">
+
+                {/* Month header row */}
+                <div className="mb-3 grid grid-cols-[8rem_repeat(12,1fr)] items-end gap-x-1.5">
+                  <span className="text-[0.62rem] font-semibold uppercase tracking-[0.26em] text-sand/36">
+                    Species
                   </span>
-                ))}
-              </div>
+                  {MONTH_LABELS.map((label, i) => (
+                    <div key={i} className="flex flex-col items-center gap-1">
+                      {i + 1 === currentMonth && (
+                        <span className="rounded-full bg-gold/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gold">
+                          now
+                        </span>
+                      )}
+                      <span
+                        className={`text-[0.65rem] font-semibold uppercase tracking-[0.18em] ${
+                          i + 1 === currentMonth ? "text-gold" : "text-sand/38"
+                        }`}
+                      >
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
 
-              {messages.seasons.species.map((species) => (
-                <div
-                  key={species.name}
-                  className="grid grid-cols-[8rem_repeat(12,minmax(0,1fr))] items-center gap-2"
-                >
-                  <div>
-                    <p className="font-heading text-3xl text-white">{species.name}</p>
-                    <p className="text-xs uppercase tracking-[0.28em] text-gold/76">
-                      {species.peak}
-                    </p>
-                  </div>
+                {/* Species rows */}
+                {messages.seasons.species.map((species, sIdx) => (
+                  <div
+                    key={species.name}
+                    className={`grid grid-cols-[8rem_repeat(12,1fr)] items-center gap-x-1.5 py-4 ${
+                      sIdx < messages.seasons.species.length - 1
+                        ? "border-b border-gold/8"
+                        : ""
+                    }`}
+                  >
+                    {/* Species label */}
+                    <div className="pr-2">
+                      <p className="font-heading text-[1.6rem] leading-tight text-white">
+                        {species.name}
+                      </p>
+                      <p className="mt-0.5 text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-gold/65">
+                        {species.peak}
+                      </p>
+                    </div>
 
-                  <svg viewBox="0 0 480 34" className="col-span-12 hidden h-12 w-full md:block">
-                    {Array.from({ length: 12 }).map((_, monthIndex) => {
-                      const month = monthIndex + 1
+                    {/* Month pills */}
+                    {Array.from({ length: 12 }).map((_, mIdx) => {
+                      const month = mIdx + 1
                       const active = species.months.includes(month)
+                      const isCurrent = month === currentMonth
+
+                      const pillClass = active
+                        ? isCurrent
+                          ? "bg-gold shadow-[0_0_16px_rgba(212,168,67,0.65)] cursor-pointer"
+                          : "bg-teal shadow-[0_0_10px_rgba(98,182,203,0.4)] cursor-pointer"
+                        : isCurrent
+                        ? "border border-gold/30 bg-gold/8"
+                        : "border border-white/8 bg-white/4"
 
                       return (
-                        <Tooltip key={`${species.name}-${month}`}>
+                        <Tooltip key={mIdx}>
                           <TooltipTrigger
-                            render={
-                              <g className="cursor-pointer" transform={`translate(${monthIndex * 38},0)`} />
-                            }
+                            render={<div className="flex items-center justify-center" />}
                           >
-                            <motion.rect
-                              x={0}
-                              y={6}
-                              width={30}
-                              height={22}
-                              rx={11}
-                              initial={{ opacity: 0.35, scaleY: 0.6 }}
-                              whileInView={{ opacity: 1, scaleY: 1 }}
+                            <motion.div
+                              className={`h-6 w-full rounded-full ${pillClass}`}
+                              initial={{ opacity: 0, scaleX: 0.3 }}
+                              whileInView={{ opacity: 1, scaleX: 1 }}
                               viewport={{ once: true }}
-                              transition={{ delay: monthIndex * 0.03, duration: 0.35 }}
-                              fill={
+                              transition={{
+                                delay: sIdx * 0.05 + mIdx * 0.03,
+                                duration: 0.35,
+                                ease: "easeOut",
+                              }}
+                              whileHover={
                                 active
-                                  ? month === currentMonth
-                                    ? "#d4a843"
-                                    : "#62b6cb"
-                                  : "rgba(245,240,232,0.1)"
+                                  ? { scaleX: 1.08, scaleY: 1.22, y: -3 }
+                                  : { scaleY: 1.12 }
                               }
-                              stroke={month === currentMonth ? "#f5f0e8" : "transparent"}
+                              style={{ transformOrigin: "center" }}
                             />
                           </TooltipTrigger>
-                          <TooltipContent>
-                            {species.name} · {species.window}
+                          <TooltipContent
+                            side="top"
+                            className="border border-white/10 bg-navy/95 text-white backdrop-blur"
+                          >
+                            <p className="text-sm font-semibold">{species.name}</p>
+                            <p className="text-xs text-sand/60">
+                              {MONTH_NAMES[mIdx]}
+                              {active ? ` · ${species.window}` : " · Off season"}
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       )
                     })}
-                  </svg>
-
-                  <div className="col-span-12 grid grid-cols-3 gap-2 md:hidden">
-                    {Array.from({ length: 12 }).map((_, monthIndex) => {
-                      const month = monthIndex + 1
-                      const active = species.months.includes(month)
-
-                      return (
-                        <motion.div
-                          key={`${species.name}-mobile-${month}`}
-                          initial={{ opacity: 0.35, y: 8 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          className="rounded-full px-3 py-2 text-center text-xs font-semibold"
-                          style={{
-                            background:
-                              active
-                                ? month === currentMonth
-                                  ? "#d4a843"
-                                  : "rgba(98,182,203,0.28)"
-                                : "rgba(245,240,232,0.08)",
-                            color: active ? "#07111e" : "#f5f0e8",
-                          }}
-                        >
-                          {monthLabels[monthIndex]}
-                        </motion.div>
-                      )
-                    })}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </TooltipProvider>
         </div>
