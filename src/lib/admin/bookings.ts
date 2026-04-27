@@ -6,6 +6,9 @@ import { formatCurrency, formatDateTime } from "./formatters"
 export interface AdminBookingListFilters {
   query?: string
   status?: string
+  tripType?: string
+  dateFrom?: string
+  dateTo?: string
   page?: number
   pageSize?: number
 }
@@ -13,13 +16,24 @@ export interface AdminBookingListFilters {
 export interface AdminBookingListItem {
   id: string
   boatName: string
+  boatCategory: string
   date: string
+  rawDate: string
   tripType: string
   guests: number
   status: string
   totalPrice: string
   depositAmount: string | null
+  depositPaidAt: string | null
   leadName: string | null
+  leadId: string | null
+}
+
+export interface AdminBookingListSummary {
+  total: number
+  confirmed: number
+  pending: number
+  revenue: string
 }
 
 export interface AdminBookingDetail {
@@ -63,11 +77,12 @@ export async function getAdminBookingList(filters: AdminBookingListFilters = {})
     db.select().from(leads),
   ])
 
-  const filteredRows = bookingRows.filter((booking) => {
+  const filteredRows = bookingRows
+    .filter((booking) => {
       const query = filters.query?.trim().toLowerCase()
       if (query) {
-        const boat = boatRows.find((entry) => entry.id === booking.boatId)
-        const lead = leadRows.find((entry) => entry.id === booking.leadId)
+        const boat = boatRows.find((b) => b.id === booking.boatId)
+        const lead = leadRows.find((l) => l.id === booking.leadId)
         const haystack = [
           boat?.name ?? "",
           lead ? `${lead.firstName} ${lead.lastName ?? ""}`.trim() : "",
@@ -77,83 +92,119 @@ export async function getAdminBookingList(filters: AdminBookingListFilters = {})
         ]
           .join(" ")
           .toLowerCase()
-
-        if (!haystack.includes(query)) {
-          return false
-        }
+        if (!haystack.includes(query)) return false
       }
 
-      if (filters.status && booking.status !== filters.status) {
-        return false
+      if (filters.status && booking.status !== filters.status) return false
+      if (filters.tripType && booking.tripType !== filters.tripType) return false
+
+      if (filters.dateFrom) {
+        const from = new Date(filters.dateFrom)
+        if (new Date(booking.date) < from) return false
+      }
+      if (filters.dateTo) {
+        const to = new Date(filters.dateTo)
+        to.setHours(23, 59, 59, 999)
+        if (new Date(booking.date) > to) return false
       }
 
       return true
     })
-    .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-  const items = filteredRows.map<AdminBookingListItem>((booking) => {
-    const boat = boatRows.find((entry) => entry.id === booking.boatId)
-    const lead = leadRows.find((entry) => entry.id === booking.leadId)
+  const mappedRows = filteredRows.map<AdminBookingListItem>((booking) => {
+    const boat = boatRows.find((b) => b.id === booking.boatId)
+    const lead = leadRows.find((l) => l.id === booking.leadId)
 
     return {
       id: booking.id,
       boatName: boat?.name ?? "Unknown boat",
+      boatCategory: boat?.category ?? "standard",
       date: formatDateTime(booking.date),
+      rawDate: new Date(booking.date).toISOString().split("T")[0],
       tripType: booking.tripType,
       guests: booking.guests,
       status: booking.status ?? "pending",
       totalPrice: formatCurrency(booking.totalPrice),
       depositAmount: booking.depositAmount ? formatCurrency(booking.depositAmount) : null,
+      depositPaidAt: booking.depositPaidAt ? formatDateTime(booking.depositPaidAt) : null,
       leadName: lead ? `${lead.firstName} ${lead.lastName ?? ""}`.trim() : null,
+      leadId: booking.leadId ?? null,
     }
   })
 
-  return paginateRows(items, filters.page, filters.pageSize)
+  const confirmedStatuses = new Set(["confirmed", "deposit_paid", "in_progress", "completed"])
+  const pendingStatuses = new Set(["pending"])
+
+  const summary: AdminBookingListSummary = {
+    total: mappedRows.length,
+    confirmed: mappedRows.filter((b) => confirmedStatuses.has(b.status)).length,
+    pending: mappedRows.filter((b) => pendingStatuses.has(b.status)).length,
+    revenue: formatCurrency(
+      filteredRows
+        .filter((b) => b.status === "completed")
+        .reduce((sum, b) => sum + parseFloat(b.totalPrice ?? "0"), 0)
+        .toFixed(2)
+    ),
+  }
+
+  const paginated = paginateRows(mappedRows, filters.page, filters.pageSize)
+  return { ...paginated, summary }
 }
 
 export async function getAdminBookingDetail(bookingId: string): Promise<AdminBookingDetail | null> {
   const bookingRows = await db.select().from(bookings)
-  const targetBooking = bookingRows.find((booking) => booking.id === bookingId)
+  const targetBooking = bookingRows.find((b) => b.id === bookingId)
 
-  if (!targetBooking) {
-    return null
-  }
+  if (!targetBooking) return null
 
-  const boatRow = (await db.select().from(boats)).find((boat) => boat.id === targetBooking.boatId)
+  const boatRow = (await db.select().from(boats)).find((b) => b.id === targetBooking.boatId)
   const leadRow = targetBooking.leadId
-    ? (await db.select().from(leads)).find((lead) => lead.id === targetBooking.leadId)
+    ? (await db.select().from(leads)).find((l) => l.id === targetBooking.leadId)
     : undefined
   const bookingAvailability = (await db.select().from(boatAvailability))
-    .filter((entry) => entry.boatId === targetBooking.boatId)
-    .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime())
+    .filter((e) => e.boatId === targetBooking.boatId)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   return {
     booking: {
       id: targetBooking.id,
       boatName: boatRow?.name ?? "Unknown boat",
+      boatCategory: boatRow?.category ?? "standard",
       date: formatDateTime(targetBooking.date),
+      rawDate: new Date(targetBooking.date).toISOString().split("T")[0],
       tripType: targetBooking.tripType,
       guests: targetBooking.guests,
       status: targetBooking.status ?? "pending",
       totalPrice: formatCurrency(targetBooking.totalPrice),
-      depositAmount: targetBooking.depositAmount ? formatCurrency(targetBooking.depositAmount) : null,
-      leadName: leadRow ? `${leadRow.firstName} ${leadRow.lastName ?? ""}`.trim() : null,
-      leadId: targetBooking.leadId,
+      depositAmount: targetBooking.depositAmount
+        ? formatCurrency(targetBooking.depositAmount)
+        : null,
+      depositPaidAt: targetBooking.depositPaidAt
+        ? formatDateTime(targetBooking.depositPaidAt)
+        : null,
+      leadName: leadRow
+        ? `${leadRow.firstName} ${leadRow.lastName ?? ""}`.trim()
+        : null,
+      leadId: targetBooking.leadId ?? null,
       boatId: targetBooking.boatId,
       internalNotes: targetBooking.internalNotes,
       specialRequests: targetBooking.specialRequests,
-      balanceDueAmount: targetBooking.balanceDueAmount ? formatCurrency(targetBooking.balanceDueAmount) : null,
+      balanceDueAmount: targetBooking.balanceDueAmount
+        ? formatCurrency(targetBooking.balanceDueAmount)
+        : null,
       stripeSessionId: targetBooking.stripeSessionId,
       stripePaymentIntentId: targetBooking.stripePaymentIntentId,
-      depositPaidAt: targetBooking.depositPaidAt ? formatDateTime(targetBooking.depositPaidAt) : null,
-      balancePaidAt: targetBooking.balancePaidAt ? formatDateTime(targetBooking.balancePaidAt) : null,
+      balancePaidAt: targetBooking.balancePaidAt
+        ? formatDateTime(targetBooking.balancePaidAt)
+        : null,
       createdAt: targetBooking.createdAt ? formatDateTime(targetBooking.createdAt) : null,
       updatedAt: targetBooking.updatedAt ? formatDateTime(targetBooking.updatedAt) : null,
     },
-    availability: bookingAvailability.map((entry) => ({
-      date: formatDateTime(entry.date),
-      isAvailable: entry.isAvailable,
-      reason: entry.reason,
+    availability: bookingAvailability.map((e) => ({
+      date: formatDateTime(e.date),
+      isAvailable: e.isAvailable,
+      reason: e.reason,
     })),
   }
 }
