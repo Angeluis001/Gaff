@@ -110,7 +110,16 @@ export async function getAdminBookingList(filters: AdminBookingListFilters = {})
 
       return true
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => {
+      const now = Date.now()
+      const aTime = new Date(a.date).getTime()
+      const bTime = new Date(b.date).getTime()
+      const aUpcoming = aTime >= now
+      const bUpcoming = bTime >= now
+      if (aUpcoming && bUpcoming) return aTime - bTime
+      if (!aUpcoming && !bUpcoming) return bTime - aTime
+      return aUpcoming ? -1 : 1
+    })
 
   const mappedRows = filteredRows.map<AdminBookingListItem>((booking) => {
     const boat = boatRows.find((b) => b.id === booking.boatId)
