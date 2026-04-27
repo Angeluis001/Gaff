@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { Anchor, ArrowDownRight, Fish, PlayCircle, Star } from "lucide-react"
+import { useRef, useState } from "react"
+import { Anchor, ArrowDownRight, Fish, Star } from "lucide-react"
 import { CldImage } from "next-cloudinary"
 import { motion, useReducedMotion, type Variants } from "framer-motion"
 
@@ -83,9 +83,11 @@ export function HeroSection() {
   const heroVideoId = process.env.NEXT_PUBLIC_CLOUDINARY_HERO_VIDEO_ID ?? "gaff/landing/hero-marlin-run"
   const heroPosterId = process.env.NEXT_PUBLIC_CLOUDINARY_HERO_POSTER_ID ?? "gaff/landing/hero-marlin-poster"
 
-  const heroVideoUrl = cloudinaryCloudName
-    ? `${getCloudinaryBase(cloudinaryCloudName, "video")}/f_auto,q_auto:eco,vc_auto,br_900k,w_1920,c_fill/${heroVideoId}.mp4`
-    : null
+  const heroVideoUrl =
+    process.env.NEXT_PUBLIC_HERO_VIDEO_URL ??
+    (cloudinaryCloudName
+      ? `${getCloudinaryBase(cloudinaryCloudName, "video")}/f_auto,q_auto:eco,vc_auto,br_900k,w_1920,c_fill/${heroVideoId}.mp4`
+      : null)
 
   const posterUrl = cloudinaryCloudName
     ? `${getCloudinaryBase(cloudinaryCloudName, "image")}/f_auto,q_auto,w_1920,c_fill/${heroPosterId}.jpg`
@@ -180,26 +182,6 @@ export function HeroSection() {
                 {messages.hero.primaryCta ?? "Book Now"}
                 <ArrowDownRight className="size-4" />
               </Button>
-              <Button
-                render={
-                  <a
-                    href={mediaMode === "video" && heroVideoUrl ? heroVideoUrl : "#fleet"}
-                    target={mediaMode === "video" ? "_blank" : undefined}
-                    rel={mediaMode === "video" ? "noreferrer" : undefined}
-                  />
-                }
-                size="lg"
-                variant="outline"
-                className="rounded-full border-gold/20 bg-white/5 px-6 text-sm font-semibold text-white backdrop-blur hover:bg-white/10"
-              >
-                {messages.hero.secondaryCta ?? "Watch Video"}
-                <PlayCircle className="size-4" />
-              </Button>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="mt-6 flex items-center gap-2 text-sm text-sand/62">
-              <span className="h-2 w-2 rounded-full bg-teal shadow-[0_0_18px_rgba(98,182,203,0.7)]" />
-              {messages.hero.availabilityHint}
             </motion.div>
 
             <motion.div variants={fadeUp} className="mt-10 grid gap-4 sm:grid-cols-3">
