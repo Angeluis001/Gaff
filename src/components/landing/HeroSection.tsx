@@ -1,14 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Anchor, ArrowDownRight, Fish, PlayCircle, Star } from "lucide-react"
 import { CldImage } from "next-cloudinary"
 import { motion, useReducedMotion, type Variants } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/LanguageContext"
-
-const VIDEO_BUDGET_BYTES = 5_000_000
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 32 },
@@ -93,27 +91,10 @@ export function HeroSection() {
     ? `${getCloudinaryBase(cloudinaryCloudName, "image")}/f_auto,q_auto,w_1920,c_fill/${heroPosterId}.jpg`
     : null
 
-  const [mediaMode, setMediaMode] = useState<"checking" | "video" | "poster">(
-    heroVideoUrl ? "checking" : "poster"
+  const [mediaMode, setMediaMode] = useState<"video" | "poster">(
+    heroVideoUrl ? "video" : "poster"
   )
-
-  useEffect(() => {
-    if (!heroVideoUrl) { setMediaMode("poster"); return }
-    let cancelled = false
-    const verifyBudget = async () => {
-      try {
-        const response = await fetch(heroVideoUrl, { method: "HEAD" })
-        const contentLength = Number(response.headers.get("content-length") ?? 0)
-        if (!cancelled) {
-          setMediaMode(response.ok && contentLength > 0 && contentLength <= VIDEO_BUDGET_BYTES ? "video" : "poster")
-        }
-      } catch {
-        if (!cancelled) setMediaMode("poster")
-      }
-    }
-    void verifyBudget()
-    return () => { cancelled = true }
-  }, [heroVideoUrl])
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   return (
     <section
@@ -124,9 +105,18 @@ export function HeroSection() {
       <div className="absolute inset-0 -z-20">
         {mediaMode === "video" && heroVideoUrl ? (
           <video
+            ref={videoRef}
             className="h-full w-full object-cover"
-            autoPlay muted loop playsInline
+            autoPlay
+            muted
+            playsInline
             poster={posterUrl ?? undefined}
+            onEnded={() => {
+              if (videoRef.current) {
+                videoRef.current.currentTime = 0
+                videoRef.current.pause()
+              }
+            }}
             onError={() => setMediaMode("poster")}
           >
             <source src={heroVideoUrl} type="video/mp4" />
