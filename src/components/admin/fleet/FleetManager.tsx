@@ -45,6 +45,8 @@ function formatDate(value: string) {
   })
 }
 
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+
 export function FleetManager({ initialBoats, initialMaintenance }: Props) {
   const [boats, setBoats] = useState<BoatRow[]>(initialBoats)
   const [maintenance, setMaintenance] = useState<MaintenanceWindow[]>(initialMaintenance)
@@ -146,7 +148,7 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
                   <div className="flex gap-4">
                     {/* Thumbnail */}
                     <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-xl bg-white/5">
-                      {boat.images?.[0] ? (
+                      {CLOUD_NAME && boat.images?.[0] ? (
                         <CldImage
                           src={boat.images[0]}
                           alt={boat.name}

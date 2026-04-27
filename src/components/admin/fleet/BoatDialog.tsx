@@ -39,6 +39,7 @@ interface Props {
 }
 
 const CATEGORIES: BoatCategory[] = ["standard", "midsize", "large", "luxury"]
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
 const fieldClass =
   "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
@@ -303,7 +304,7 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
               Images
             </p>
 
-            {images.length > 0 && (
+            {CLOUD_NAME && images.length > 0 && (
               <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {images.map((publicId) => (
                   <div key={publicId} className="group relative aspect-square overflow-hidden rounded-lg">
@@ -326,35 +327,41 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
               </div>
             )}
 
-            <CldUploadWidget
-              signatureEndpoint="/api/admin/cloudinary-signature"
-              options={{
-                multiple: true,
-                maxFiles: 10,
-                resourceType: "image",
-                clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
-                maxFileSize: 8_000_000,
-              }}
-              onSuccess={(result) => {
-                if (result.info && typeof result.info === "object" && "public_id" in result.info) {
-                  const publicId = (result.info as { public_id: string }).public_id
-                  setImages((prev) => [...prev, publicId])
-                }
-              }}
-            >
-              {({ open }) => (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="rounded-lg border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-                  onClick={() => open()}
-                >
-                  <Upload className="size-4" />
-                  Upload images
-                </Button>
-              )}
-            </CldUploadWidget>
+            {CLOUD_NAME ? (
+              <CldUploadWidget
+                signatureEndpoint="/api/admin/cloudinary-signature"
+                options={{
+                  multiple: true,
+                  maxFiles: 10,
+                  resourceType: "image",
+                  clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
+                  maxFileSize: 8_000_000,
+                }}
+                onSuccess={(result) => {
+                  if (result.info && typeof result.info === "object" && "public_id" in result.info) {
+                    const publicId = (result.info as { public_id: string }).public_id
+                    setImages((prev) => [...prev, publicId])
+                  }
+                }}
+              >
+                {({ open }) => (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                    onClick={() => open()}
+                  >
+                    <Upload className="size-4" />
+                    Upload images
+                  </Button>
+                )}
+              </CldUploadWidget>
+            ) : (
+              <p className="text-xs text-white/30">
+                Cloudinary not configured — set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to enable uploads.
+              </p>
+            )}
           </div>
 
           {error && (
