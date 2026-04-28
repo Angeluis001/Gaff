@@ -1,7 +1,7 @@
 "use client"
 
+import Image from "next/image"
 import { Fish, ShieldCheck, Waves } from "lucide-react"
-import { CldImage } from "next-cloudinary"
 import { motion } from "framer-motion"
 
 import { Badge } from "@/components/ui/badge"
@@ -9,13 +9,15 @@ import { useLanguage } from "@/contexts/LanguageContext"
 
 const icons = [Fish, ShieldCheck, Waves]
 
-const MAIN_IMAGE = "Marlin_zdcdgy"
-const LOGO_GRAYFISHTAG = "Tag1_hq7zk8"
-const LOGO_IGFA = "Tag2_ejx1qn"
+const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+const CDN = CLOUD ? `https://res.cloudinary.com/${CLOUD}/image/upload` : null
+
+const MAIN_IMAGE_URL   = CDN ? `${CDN}/Marlin_zdcdgy.png`  : null
+const LOGO_GRAYFSHTAG_URL = CDN ? `${CDN}/Tag1_hq7zk8.png` : null
+const LOGO_IGFA_URL    = CDN ? `${CDN}/Tag2_ejx1qn.png`    : null
 
 export function ConservationSection() {
   const { messages } = useLanguage()
-  const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
   return (
     <section id="conservation" className="landing-section scroll-mt-24">
@@ -26,15 +28,14 @@ export function ConservationSection() {
 
           {/* Left — full-bleed image with bottom overlay */}
           <div className="relative min-h-[28rem] lg:min-h-[40rem]">
-            {cloudinaryCloudName ? (
-              <CldImage
+            {MAIN_IMAGE_URL ? (
+              <Image
                 alt="Catch and release moment off the coast of Los Cabos"
-                src={MAIN_IMAGE}
+                src={MAIN_IMAGE_URL}
                 fill
                 className="object-cover"
                 sizes="(min-width: 1024px) 55vw, 100vw"
-                crop="fill"
-                gravity="center"
+                priority
               />
             ) : (
               <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(98,182,203,0.2),transparent_35%),linear-gradient(180deg,#1b4965_0%,#07111e_100%)]" />
@@ -130,10 +131,10 @@ export function ConservationSection() {
                   Tag-and-release stewardship keeps sport-fishing impact visible and measurable.
                 </p>
               </div>
-              {cloudinaryCloudName ? (
-                <CldImage
+              {LOGO_GRAYFSHTAG_URL ? (
+                <Image
                   alt="GrayFishTag logo"
-                  src={LOGO_GRAYFISHTAG}
+                  src={LOGO_GRAYFSHTAG_URL}
                   width={56}
                   height={56}
                   className="flex-shrink-0 rounded-full bg-white/10 object-contain p-1"
@@ -163,10 +164,10 @@ export function ConservationSection() {
                   Handling cues and release-first framing reinforce premium care on the water.
                 </p>
               </div>
-              {cloudinaryCloudName ? (
-                <CldImage
+              {LOGO_IGFA_URL ? (
+                <Image
                   alt="IGFA logo"
-                  src={LOGO_IGFA}
+                  src={LOGO_IGFA_URL}
                   width={56}
                   height={56}
                   className="flex-shrink-0 rounded-full bg-white/10 object-contain p-1"
