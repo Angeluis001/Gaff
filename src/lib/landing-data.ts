@@ -54,7 +54,7 @@ export const testimonialMedia = [
       "The crew got us on fish early and kept the day feeling polished from start to finish.",
     highlightPhrases: ["on fish early", "polished"],
     trip: "Luxury Marlin Charter",
-    imageUrl: null as string | null,
+    imageUrl: "https://res.cloudinary.com/dtqelgtco/image/upload/v1777348735/Review_One_mbgbgc.png",
   },
   {
     guest: "Alyssa R.",
@@ -63,7 +63,7 @@ export const testimonialMedia = [
       "Everything felt elevated, organized, and genuinely premium without losing the fun.",
     highlightPhrases: ["elevated", "genuinely premium"],
     trip: "Large Offshore Run",
-    imageUrl: null as string | null,
+    imageUrl: "https://res.cloudinary.com/dtqelgtco/image/upload/v1777348735/Review_3_duzoum.png",
   },
   {
     guest: "Daniel P.",
@@ -72,7 +72,7 @@ export const testimonialMedia = [
       "The release footage, the crew energy, and the boat quality all felt first-class.",
     highlightPhrases: ["crew energy", "first-class"],
     trip: "Midsize Dorado Day",
-    imageUrl: null as string | null,
+    imageUrl: "https://res.cloudinary.com/dtqelgtco/image/upload/v1777348735/Review_two_deu5qh.png",
   },
 ]
 
