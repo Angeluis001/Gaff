@@ -1,6 +1,6 @@
 "use client"
 
-const WA_NUMBER = process.env.NEXT_PUBLIC_GAFF_WHATSAPP_NUMBER || "526241000381"
+const WA_NUMBER = process.env.NEXT_PUBLIC_GAFF_WHATSAPP_NUMBER || "526243827561"
 const WA_TEXT = encodeURIComponent(
   "Hi! I'm interested in booking a fishing charter with GAFF All Fishing in Cabo San Lucas."
 )
