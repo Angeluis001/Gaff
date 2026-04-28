@@ -34,7 +34,7 @@ export function ConservationSection() {
                 className="object-cover"
                 sizes="(min-width: 1024px) 55vw, 100vw"
                 crop="fill"
-                gravity="auto"
+                gravity="center"
               />
             ) : (
               <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(98,182,203,0.2),transparent_35%),linear-gradient(180deg,#1b4965_0%,#07111e_100%)]" />
