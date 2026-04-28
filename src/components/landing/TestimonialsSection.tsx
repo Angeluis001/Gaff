@@ -1,16 +1,50 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
+import { Fish } from "lucide-react"
 import { motion, useInView, type Variants } from "framer-motion"
-import { CldImage } from "next-cloudinary"
 
-import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { certificationLogos, testimonialMedia } from "@/lib/landing-data"
 
-const articleVariants: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+const LOGO_IGFA       = "https://res.cloudinary.com/dtqelgtco/image/upload/v1777344379/Tag2_ejx1qn.png"
+const LOGO_GRAYFISHTAG = "https://res.cloudinary.com/dtqelgtco/image/upload/v1777344379/Tag1_hq7zk8.png"
+
+const logoUrlMap: Record<string, string> = {
+  IGFA: LOGO_IGFA,
+  GrayFishTag: LOGO_GRAYFISHTAG,
+}
+
+function HighlightedQuote({ text, highlights }: { text: string; highlights?: string[] }) {
+  if (!highlights?.length) return <>{text}</>
+
+  type Part = { text: string; gold: boolean }
+  let parts: Part[] = [{ text, gold: false }]
+
+  for (const phrase of highlights) {
+    parts = parts.flatMap((part) => {
+      if (part.gold) return [part]
+      const segments = part.text.split(phrase)
+      if (segments.length === 1) return [part]
+      return segments.flatMap((seg, i) => [
+        ...(seg ? [{ text: seg, gold: false }] : []),
+        ...(i < segments.length - 1 ? [{ text: phrase, gold: true }] : []),
+      ])
+    })
+  }
+
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.gold ? (
+          <span key={i} className="text-gold">{p.text}</span>
+        ) : (
+          <span key={i}>{p.text}</span>
+        )
+      )}
+    </>
+  )
 }
 
 function Counter({ label, value }: { label: string; value: string }) {
@@ -42,7 +76,6 @@ function Counter({ label, value }: { label: string; value: string }) {
 
 export function TestimonialsSection() {
   const { messages } = useLanguage()
-  const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
   const trackRef = useRef<HTMLDivElement>(null)
   const [dragLeft, setDragLeft] = useState(0)
@@ -76,9 +109,7 @@ export function TestimonialsSection() {
         <div className="grid gap-6 lg:grid-cols-[1fr_18rem]">
           {/* Draggable card track */}
           <div className="relative overflow-hidden rounded-[1rem]">
-            {/* Left fade — visible once user drags */}
             <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[#07111e] to-transparent" />
-            {/* Right fade — hints at more content */}
             <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-[#07111e] to-transparent" />
 
             <motion.div
@@ -90,55 +121,71 @@ export function TestimonialsSection() {
               className="flex cursor-grab gap-4 active:cursor-grabbing"
               style={{ touchAction: "pan-y" }}
             >
-              {testimonialMedia.map((item) => (
+              {testimonialMedia.map((item, idx) => (
                 <motion.article
                   key={item.guest}
-                  variants={articleVariants}
-                  initial="hidden"
-                  whileInView="visible"
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.15 }}
+                  transition={{ duration: 0.5, ease: "easeOut", delay: idx * 0.06 }}
                   whileHover={{
-                    y: -10,
-                    scale: 1.02,
-                    boxShadow: "0 24px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,168,67,0.18)",
+                    y: -6,
+                    boxShadow: "0 28px 56px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,168,67,0.18)",
                     transition: { type: "spring", stiffness: 280, damping: 22 },
                   }}
-                  className="glass-panel min-w-[20rem] flex-shrink-0 overflow-hidden rounded-[1.75rem] border border-gold/10 sm:min-w-[22rem]"
+                  className="relative min-w-[min(88vw,44rem)] flex-shrink-0 h-[34rem] overflow-hidden rounded-[2rem] border border-gold/12"
                   style={{ userSelect: "none" }}
                 >
-                  <div className="relative h-56 border-b border-gold/10">
-                    {cloudinaryCloudName ? (
-                      <CldImage
-                        alt={`${item.guest} fishing trip photo`}
-                        src={item.cloudinaryPublicId}
-                        fill
-                        className="object-cover"
-                        sizes="(min-width: 768px) 28rem, 20rem"
-                        crop="fill"
-                        gravity="auto"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(98,182,203,0.24),transparent_40%),linear-gradient(180deg,#163753_0%,#07111e_100%)]" />
-                    )}
-                    {/* Subtle gradient over image for legibility */}
-                    <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#07111e]/50 to-transparent" />
-                  </div>
-                  <div className="p-6">
-                    <Badge className="rounded-full bg-gold text-navy">{item.trip}</Badge>
-                    <p className="mt-4 text-lg leading-8 text-sand/84">
-                      &ldquo;{item.quote}&rdquo;
-                    </p>
-                    <div className="mt-5 flex items-center gap-3">
-                      <div className="h-px flex-1 bg-gold/10" />
+                  {/* Fallback gradient base */}
+                  <div className="absolute inset-0 bg-[linear-gradient(135deg,#0d2137_0%,#07111e_60%,#0a1a2e_100%)]" />
+
+                  {/* Photo — renders on top of gradient if URL is set */}
+                  {item.imageUrl && (
+                    <Image
+                      alt={`${item.guest} fishing trip`}
+                      src={item.imageUrl}
+                      fill
+                      className="object-cover"
+                      sizes="(min-width: 1024px) 44rem, 88vw"
+                      draggable={false}
+                    />
+                  )}
+
+                  {/* Left-to-right gradient overlay for text legibility */}
+                  <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(7,17,30,0.95)_0%,rgba(7,17,30,0.80)_38%,rgba(7,17,30,0.30)_62%,transparent_82%)]" />
+                  {/* Bottom vignette */}
+                  <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(7,17,30,0.6)_0%,transparent_40%)]" />
+
+                  {/* Text content */}
+                  <div className="absolute inset-y-0 left-0 flex w-[58%] flex-col justify-between p-8 sm:p-10">
+                    {/* Top — trip label */}
+                    <div>
+                      <p className="text-[0.62rem] font-bold uppercase tracking-[0.38em] text-gold/80">
+                        {item.trip}
+                      </p>
+                      <div className="mt-2.5 flex items-center gap-2">
+                        <div className="h-px w-5 bg-gold/40" />
+                        <Fish className="size-3 text-gold/50" />
+                      </div>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-white">{item.guest}</p>
-                    <p className="text-sm text-sand/50">{item.location}</p>
+
+                    {/* Bottom — quote + attribution */}
+                    <div>
+                      <p className="font-heading text-2xl leading-snug text-white sm:text-3xl">
+                        &ldquo;<HighlightedQuote text={item.quote} highlights={item.highlightPhrases} />&rdquo;
+                      </p>
+                      <div className="mt-6 h-px w-8 bg-gold/40" />
+                      <p className="mt-4 text-xs font-bold uppercase tracking-[0.24em] text-gold">
+                        {item.guest}
+                      </p>
+                      <p className="mt-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-sand/48">
+                        {item.location}
+                      </p>
+                    </div>
                   </div>
                 </motion.article>
               ))}
 
-              {/* Trailing spacer so last card clears the right fade */}
               <div className="w-8 flex-shrink-0" />
             </motion.div>
           </div>
@@ -146,34 +193,37 @@ export function TestimonialsSection() {
           {/* Certification sidebar */}
           <aside className="glass-panel rounded-[1.75rem] border border-gold/10 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold/76">
-              Certification logo wall
+              Certifications
             </p>
             <div className="mt-5 space-y-3">
-              {certificationLogos.map((logo) => (
-                <motion.div
-                  key={logo.name}
-                  whileHover={{ x: 4, transition: { type: "spring", stiffness: 400, damping: 20 } }}
-                  className="flex items-center gap-3 rounded-[1.25rem] border border-gold/10 bg-white/3 p-3"
-                >
-                  {cloudinaryCloudName ? (
-                    <CldImage
-                      alt={`${logo.name} logo`}
-                      src={logo.cloudinaryPublicId}
-                      width={56}
-                      height={56}
-                      className="rounded-full bg-white/80 object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white">
-                      logo
+              {certificationLogos.map((logo) => {
+                const url = logoUrlMap[logo.name]
+                return (
+                  <motion.div
+                    key={logo.name}
+                    whileHover={{ x: 4, transition: { type: "spring", stiffness: 400, damping: 20 } }}
+                    className="flex items-center gap-3 rounded-[1.25rem] border border-gold/10 bg-white/3 p-3"
+                  >
+                    {url ? (
+                      <Image
+                        alt={`${logo.name} logo`}
+                        src={url}
+                        width={48}
+                        height={48}
+                        className="rounded-full bg-white/80 object-contain p-1 flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold text-white">
+                        {logo.name.slice(0, 2)}
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-white">{logo.name}</p>
+                      <p className="text-xs text-sand/50">Certified partner</p>
                     </div>
-                  )}
-                  <div>
-                    <p className="font-semibold text-white">{logo.name}</p>
-                    <p className="text-sm text-sand/60">Badge-backed trust signal</p>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                )
+              })}
             </div>
           </aside>
         </div>

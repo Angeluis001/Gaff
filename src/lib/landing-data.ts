@@ -52,24 +52,27 @@ export const testimonialMedia = [
     location: "Austin, Texas",
     quote:
       "The crew got us on fish early and kept the day feeling polished from start to finish.",
+    highlightPhrases: ["on fish early", "polished"],
     trip: "Luxury Marlin Charter",
-    cloudinaryPublicId: "gaff/landing/testimonial-chris",
+    imageUrl: null as string | null,
   },
   {
     guest: "Alyssa R.",
     location: "Phoenix, Arizona",
     quote:
       "Everything felt elevated, organized, and genuinely premium without losing the fun.",
+    highlightPhrases: ["elevated", "genuinely premium"],
     trip: "Large Offshore Run",
-    cloudinaryPublicId: "gaff/landing/testimonial-alyssa",
+    imageUrl: null as string | null,
   },
   {
     guest: "Daniel P.",
     location: "San Diego, California",
     quote:
       "The release footage, the crew energy, and the boat quality all felt first-class.",
+    highlightPhrases: ["crew energy", "first-class"],
     trip: "Midsize Dorado Day",
-    cloudinaryPublicId: "gaff/landing/testimonial-daniel",
+    imageUrl: null as string | null,
   },
 ]
 
