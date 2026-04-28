@@ -9,12 +9,9 @@ import { useLanguage } from "@/contexts/LanguageContext"
 
 const icons = [Fish, ShieldCheck, Waves]
 
-const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-const CDN = CLOUD ? `https://res.cloudinary.com/${CLOUD}/image/upload` : null
-
-const MAIN_IMAGE_URL   = CDN ? `${CDN}/Marlin_zdcdgy.png`  : null
-const LOGO_GRAYFSHTAG_URL = CDN ? `${CDN}/Tag1_hq7zk8.png` : null
-const LOGO_IGFA_URL    = CDN ? `${CDN}/Tag2_ejx1qn.png`    : null
+const MAIN_IMAGE_URL      = "https://res.cloudinary.com/dtqelgtco/image/upload/v1777344379/Marlin_zdcdgy.png"
+const LOGO_GRAYFSHTAG_URL = "https://res.cloudinary.com/dtqelgtco/image/upload/v1777344379/Tag1_hq7zk8.png"
+const LOGO_IGFA_URL       = "https://res.cloudinary.com/dtqelgtco/image/upload/v1777344379/Tag2_ejx1qn.png"
 
 export function ConservationSection() {
   const { messages } = useLanguage()
