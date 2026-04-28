@@ -1,12 +1,13 @@
 "use client"
 
+import Image from "next/image"
 import { ArrowRight } from "lucide-react"
-import { CldImage } from "next-cloudinary"
 import { motion, type Variants } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/LanguageContext"
-import { ctaMedia } from "@/lib/landing-data"
+
+const CTA_BG = "https://res.cloudinary.com/dtqelgtco/image/upload/v1777344379/Cabo_BG_xwya7n.png"
 
 const contentVariants: Variants = {
   hidden: {},
@@ -20,7 +21,6 @@ const itemVariants: Variants = {
 
 export function CTASection() {
   const { messages } = useLanguage()
-  const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
   return (
     <section id="cta" className="landing-section scroll-mt-24 pt-0">
@@ -33,19 +33,13 @@ export function CTASection() {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <div className="relative min-h-[26rem]">
-            {cloudinaryCloudName ? (
-              <CldImage
-                alt="Panoramic GAFF charter scene in Los Cabos"
-                src={ctaMedia.cloudinaryPublicId}
-                fill
-                className="object-cover"
-                sizes="100vw"
-                crop="fill"
-                gravity="auto"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(98,182,203,0.24),transparent_35%),linear-gradient(180deg,#163753_0%,#07111e_100%)]" />
-            )}
+            <Image
+              alt="Panoramic GAFF charter scene in Los Cabos"
+              src={CTA_BG}
+              fill
+              className="object-cover"
+              sizes="100vw"
+            />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,17,30,0.2)_0%,rgba(7,17,30,0.78)_100%)]" />
             <motion.div
               className="relative z-10 flex min-h-[26rem] flex-col justify-end p-8 sm:p-10"
