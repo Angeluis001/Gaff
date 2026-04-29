@@ -188,3 +188,16 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 8. Analytics Agent | 1/1 | Completed | 2026-04-15 |
 
 
+
+### Phase 9: Upgrade Agentes — Integrar marketingskills dentro de los agentes existentes
+
+**Goal:** Elevar la calidad de outputs de los 6 agentes GAFF integrando frameworks de marketing de marketingskills: enriquecer los system prompts de todos los agentes LLM, crear product-marketing-context.md con el positioning de GAFF, añadir generación LLM a los agentes que solo tenían lógica determinística, y refactorizar el SEO Agent para programmatic SEO con páginas de fishing reports públicas indexables.
+**Requirements**: TBD (phase uses research findings as source of truth — no formal requirement IDs assigned)
+**Depends on:** Phase 8
+**Plans:** 4 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Foundation: git submodule marketingskills, product-marketing-context.md, Lead Agent psychology enrichment, follow-up sequence rewrite
+- [ ] 09-02-PLAN.md — SEO + Reviews upgrade: pSEO slug architecture, /fishing-reports/[slug] public route, schema.org Article markup, llms.txt, Reviews Agent brand voice
+- [ ] 09-03-PLAN.md — Marketing upgrade: LLM caption generation with social-content hook formulas, competitor-anchored prompts, comment reply drafts
+- [ ] 09-04-PLAN.md — CRM upgrade: LLM email content generation for anniversary/seasonal/re-engagement campaigns with email-sequence and churn-prevention frameworks
