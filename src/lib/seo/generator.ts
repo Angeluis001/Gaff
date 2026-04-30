@@ -5,8 +5,24 @@ import { bookings, boats, seoPosts } from "@/lib/db/schema"
 
 import { getSeoKeywordTargets } from "./reports"
 
-const SEO_SYSTEM_PROMPT =
-  "You are an SEO content writer for GAFF All Fishing, a premium sport fishing charter in Cabo San Lucas, Mexico. Write in a knowledgeable, premium tone targeting US sport fishing tourists. Use natural keyword integration — never keyword-stuffed. Include practical details that would help a visitor planning a Cabo trip."
+const SEO_SYSTEM_PROMPT = `You are an SEO content writer for GAFF All Fishing Los Cabos — a premium sport fishing charter targeting US tourists who search Google and ask AI assistants like ChatGPT and Perplexity for Cabo fishing recommendations.
+
+CONTENT STRUCTURE (apply to every post):
+- Opening paragraph: direct answer to the search query in the first 2 sentences — write as a citable fact ("Best time for blue marlin in Cabo San Lucas: October through November, peak season")
+- Sections: H2/H3 listicle or how-to format so AI can extract discrete answers
+- FAQ section: minimum 3 Q&A pairs targeting related long-tail searches (e.g., "What fish can you catch in Cabo in October?")
+- CTA: end with a specific booking invitation — "Book your Cabo charter at gaffallfishingloscabos.com before peak dates fill"
+
+PROGRAMMATIC SEO URL PATTERN (fishing reports):
+- Slug format: [species]-fishing-cabo-[month]-[year] (e.g., marlin-fishing-cabo-october-2026)
+- Use real trip data — species caught, date, boat — as unique data competitors cannot replicate
+
+AI VISIBILITY (make content citable by ChatGPT, Perplexity, Google AI Overviews):
+- Include specific data points with numbers ("Yellowfin tuna peaks May–December in Cabo, best late summer")
+- Use definition blocks for species and seasons (what they are, when they run, where in Cabo)
+- Source claims to GAFF real trip data when available ("Based on GAFF charter data, October 2026...")
+
+TONE: knowledgeable, premium, practical. Write for the angler planning their trip, not a search crawler. Never keyword-stuffed.`
 
 function slugify(value: string) {
   return value
@@ -18,6 +34,20 @@ function slugify(value: string) {
 
 function getUniqueSlug(baseSlug: string) {
   return `${baseSlug}-${new Date().toISOString().slice(0, 10)}`
+}
+
+function getFishingReportSlug(
+  fishCaught: { species: string; weight?: string; released: boolean }[] | null | undefined,
+  tripDate: string,
+  bookingId: string
+): string {
+  const speciesName = fishCaught && fishCaught.length > 0 ? fishCaught[0].species : "offshore"
+  const speciesSlug = slugify(speciesName)
+  const date = new Date(tripDate)
+  const month = date.toLocaleString("en-US", { month: "long" }).toLowerCase()
+  const year = date.getFullYear()
+  const bookingPrefix = bookingId.slice(0, 8)
+  return `${speciesSlug}-fishing-cabo-${month}-${year}-${bookingPrefix}`
 }
 
 function currentWeekKeyword() {
@@ -156,7 +186,7 @@ export async function generateFishingReportFromBooking(bookingId: string) {
     .values({
       kind: "fishing_report",
       title,
-      slug: getUniqueSlug(slugify(title)),
+      slug: getFishingReportSlug(booking.fishCaught, tripDate, booking.id),
       excerpt: `${booking.tripType.replace("_", " ")} charter out of Cabo San Lucas on ${tripDate} — conditions, catch, and highlights.`,
       content,
       keywordFocus: "cabo fishing report",
