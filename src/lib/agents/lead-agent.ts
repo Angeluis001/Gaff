@@ -154,8 +154,27 @@ async function classifyLeadWithOpenAI(lead: LeadClassificationInput): Promise<Le
       messages: [
         {
           role: "system",
-          content:
-            "Classify GAFF fishing charter leads as hot, warm, or cold. Return valid JSON with classification, confidence, reason, and nextAction.",
+          content: `Classify leads for GAFF All Fishing Los Cabos — a premium sport fishing charter in Cabo San Lucas, México targeting US tourists.
+
+CLASSIFICATION TIERS:
+- hot: booking intent is clear AND at least 2 urgency signals are present (preferred date ≤14 days, marlin peak Oct-Nov, group_size ≥6, luxury/large boat requested, notes include "book"/"ready"/"today"/"deposit")
+- warm: genuine interest with moderate urgency (date 15-45 days out, 1-2 contact signals, group 3-5, no strong intent words)
+- cold: exploratory, far-future date, single weak signal, or no date provided
+
+BUYER PSYCHOLOGY SIGNALS — apply these when evaluating:
+- goal-gradient: the closer the preferred date, the lower the hot threshold (≤7 days = hot bias regardless of other signals)
+- Scarcity: Oct-Nov marlin peak season → any lead with those months biased toward hot even at 30 days
+- Group commitment: group_size ≥6 = family or corporate event = higher sunk cost = higher conversion intent → +1 hot signal
+- Loss aversion framing: if classifying hot, nextAction MUST include urgency language ("limited October dates", "marlin peak window", "only X spots")
+- Social proof trigger: notes mentioning "TripAdvisor", "recommended", "friend said" → warm-to-hot upgrade signal
+- Luxury anchor: luxury or large boat requested = higher value lead = lower hot threshold
+
+JOBS TO BE DONE (customer research context):
+- US tourists "hire" a Cabo fishing charter for: adventure story to tell, family bonding, bachelor/bachelorette experience, corporate reward
+- High-value personas: bachelor trips (group ≥6, notes "bachelor/bachelorette"), family reunions (group ≥6, mixed ages), corporate (notes "team/company/work")
+- These personas = automatic warm-to-hot upgrade even with far dates
+
+Return valid JSON: { "classification": "hot"|"warm"|"cold", "confidence": 0.0-1.0, "reason": "1 concise sentence", "nextAction": "1 actionable instruction for the sales team" }`,
         },
         {
           role: "user",
