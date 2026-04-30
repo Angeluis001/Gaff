@@ -174,7 +174,7 @@ Phase 8 is implemented and verified.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -186,6 +186,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. CRM & Reviews Agent | 2/2 | Completed | 2026-04-15 |
 | 7. SEO & Marketing Agents | 3/3 | Completed | 2026-04-15 |
 | 8. Analytics Agent | 1/1 | Completed | 2026-04-15 |
+| 9. Upgrade Agentes | 0/4 | Ready to execute | — |
+| 10. OpenClaw WhatsApp Expansion | 0/1 | Not planned yet | — |
 
 
 
@@ -201,3 +203,13 @@ Plans:
 - [ ] 09-02-PLAN.md — SEO + Reviews upgrade: pSEO slug architecture, /fishing-reports/[slug] public route, schema.org Article markup, llms.txt, Reviews Agent brand voice
 - [ ] 09-03-PLAN.md — Marketing upgrade: LLM caption generation with social-content hook formulas, competitor-anchored prompts, comment reply drafts
 - [ ] 09-04-PLAN.md — CRM upgrade: LLM email content generation for anniversary/seasonal/re-engagement campaigns with email-sequence and churn-prevention frameworks
+
+### Phase 10: OpenClaw WhatsApp Agent Expansion
+
+**Goal:** Convertir el canal WhatsApp de GAFF de recepción pasiva de leads a un agente conversacional completo que responde, vende, hace upsell, recolecta reseñas y nutre leads fríos — todo de forma automática a través de OpenClaw.
+**Requirements**: TBD
+**Depends on:** Phase 9
+**Plans:** 1 plan (partially implemented — see checklist in PLAN.md)
+
+Plans:
+- [ ] 10-01: Agente conversacional bidireccional (F1), review collection (F2), nurturing extendido cold leads (F3), upsell post-booking (F4), escalación a humano + alerta admin (F5)
