@@ -15,12 +15,6 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     minimumRole: "viewer",
   },
   {
-    href: "/admin/connections",
-    label: "Connections",
-    description: "Entity relationship graph",
-    minimumRole: "viewer",
-  },
-  {
     href: "/admin/leads",
     label: "Leads",
     description: "Inquiry pipeline and timelines",
