@@ -187,7 +187,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. SEO & Marketing Agents | 3/3 | Completed | 2026-04-15 |
 | 8. Analytics Agent | 1/1 | Completed | 2026-04-15 |
 | 9. Upgrade Agentes | 4/4 | Complete    | 2026-05-01 |
-| 10. OpenClaw WhatsApp Expansion | 0/1 | Not planned yet | — |
+| 10. OpenClaw WhatsApp Expansion | 0/3 | Planned — ready to execute | — |
 
 
 
@@ -206,10 +206,12 @@ Plans:
 
 ### Phase 10: OpenClaw WhatsApp Agent Expansion
 
-**Goal:** Convertir el canal WhatsApp de GAFF de recepción pasiva de leads a un agente conversacional completo que responde, vende, hace upsell, recolecta reseñas y nutre leads fríos — todo de forma automática a través de OpenClaw.
-**Requirements**: TBD
+**Goal:** All five WhatsApp features (F1–F5) are verified working in production: the conversational agent responds to customer messages, post-trip review requests go out via WhatsApp, cold leads receive 5-step nurturing sequences, booked clients receive an upsell message 48h after deposit, and human escalation alerts the admin by WhatsApp. Environment variables are confirmed and the OpenClaw gateway is verified connected.
+**Requirements**: WHATSAPP-DB-01, WHATSAPP-ENV-01, WHATSAPP-F1-01, WHATSAPP-F2-01, WHATSAPP-F3-01, WHATSAPP-F4-01, WHATSAPP-F5-01
 **Depends on:** Phase 9
-**Plans:** 1 plan (partially implemented — see checklist in PLAN.md)
+**Plans:** 3 plans
 
 Plans:
-- [ ] 10-01: Agente conversacional bidireccional (F1), review collection (F2), nurturing extendido cold leads (F3), upsell post-booking (F4), escalación a humano + alerta admin (F5)
+- [ ] 10-01-PLAN.md — DB migration confirmation + env var setup (ADMIN_WHATSAPP_NUMBER, GOOGLE_REVIEW_URL) in Vercel
+- [ ] 10-02-PLAN.md — Feature smoke tests: F3 cold steps DB verification, F2 review-request cron seed test, F4 upsell step seed + followup dispatch test
+- [ ] 10-03-PLAN.md — E2E WhatsApp validation: F1 availability query smoke test, F5 escalation + admin alert (requires live WhatsApp device)
