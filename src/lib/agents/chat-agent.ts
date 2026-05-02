@@ -70,15 +70,20 @@ async function checkAvailability(dateStr: string, boatCategory?: string) {
   }
 }
 
-function getPricing(boatCategory?: string) {
-  const pricing = [
-    { category: "standard", name: "Standard 26ft", capacity: 4, halfDay: 550, fullDay: 850 },
-    { category: "midsize", name: "Midsize 31ft", capacity: 6, halfDay: 850, fullDay: 1250 },
-    { category: "large", name: "Large 38ft", capacity: 8, halfDay: 1250, fullDay: 1800 },
-    { category: "luxury", name: "Luxury 45ft", capacity: 10, halfDay: 1550, fullDay: 1950 },
-  ]
-  const filtered = boatCategory ? pricing.filter((p) => p.category === boatCategory) : pricing
-  return { pricing: filtered, note: "Deposit required to confirm booking." }
+async function getPricing(boatCategory?: string) {
+  const allBoats = await db.select().from(boats).where(eq(boats.isActive, true))
+  const filtered = boatCategory ? allBoats.filter((b) => b.category === boatCategory) : allBoats
+  return {
+    pricing: filtered.map((b) => ({
+      id: b.id,
+      category: b.category,
+      name: b.name,
+      capacity: b.capacity,
+      halfDay: b.priceHalfDay ? `$${b.priceHalfDay}` : null,
+      fullDay: b.priceFullDay ? `$${b.priceFullDay}` : null,
+    })),
+    note: "A 50% deposit is required to confirm the booking.",
+  }
 }
 
 function getBookingLink(date?: string, boatCategory?: string) {
@@ -210,11 +215,11 @@ RESPONSE RULES:
 - When ready to book: use get_booking_link
 - escalate_to_human ONLY for paid booking cancellations, serious complaints, or explicit "I want a human" requests
 
-GAFF FLEET:
-- Standard 26ft | 4 guests | from $550 half-day
-- Midsize 31ft | 6 guests | from $850 half-day
-- Large 38ft | 8 guests | from $1,250 half-day
-- Luxury 45ft | 10 guests | from $1,550 half-day
+GAFF FLEET (use get_pricing tool for exact prices):
+- Standard 26ft | 4 guests | from $550 half-day / $880 full-day
+- Midsize 31ft | 6 guests | from $850 half-day / $1,360 full-day
+- Large 38ft | 8 guests | from $1,250 half-day / $2,000 full-day
+- Luxury 45ft | 10 guests | from $1,950 half-day / $3,120 full-day
 
 FISHING SEASONS IN CABO (always answer from this knowledge — never say you can't verify it):
 - Blue Marlin: peak Jun–Nov, best in October
@@ -239,7 +244,7 @@ async function executeTool(
     case "check_availability":
       return { result: JSON.stringify(await checkAvailability(args.date, args.boat_category)) }
     case "get_pricing":
-      return { result: JSON.stringify(getPricing(args.boat_category)) }
+      return { result: JSON.stringify(await getPricing(args.boat_category)) }
     case "get_booking_link":
       return { result: JSON.stringify(getBookingLink(args.date, args.boat_category)) }
     case "get_seasons_info":
@@ -447,11 +452,11 @@ RESPONSE RULES:
 - Use get_booking_link only if the customer just wants to browse — use create_booking when they're ready to pay
 - request_whatsapp_handoff only when customer explicitly asks to move to WhatsApp or talk to a person
 
-GAFF FLEET:
-- Standard 26ft | 4 guests | from $550 half-day / $850 full-day
-- Midsize 31ft | 6 guests | from $850 half-day / $1,250 full-day
-- Large 38ft | 8 guests | from $1,250 half-day / $1,800 full-day
-- Luxury 45ft | 10 guests | from $1,550 half-day / $1,950 full-day
+GAFF FLEET (use get_pricing tool for exact prices):
+- Standard 26ft | 4 guests | from $550 half-day / $880 full-day
+- Midsize 31ft | 6 guests | from $850 half-day / $1,360 full-day
+- Large 38ft | 8 guests | from $1,250 half-day / $2,000 full-day
+- Luxury 45ft | 10 guests | from $1,950 half-day / $3,120 full-day
 
 FISHING SEASONS IN CABO (answer from this knowledge — never say you can't verify it):
 - Blue Marlin: peak Jun–Nov, best in October
@@ -476,7 +481,7 @@ async function executeWebTool(
     case "check_availability":
       return { result: JSON.stringify(await checkAvailability(args.date, args.boat_category)) }
     case "get_pricing":
-      return { result: JSON.stringify(getPricing(args.boat_category)) }
+      return { result: JSON.stringify(await getPricing(args.boat_category)) }
     case "get_booking_link":
       return { result: JSON.stringify(getBookingLink(args.date, args.boat_category)) }
     case "get_seasons_info":
