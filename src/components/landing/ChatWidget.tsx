@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 
 import type { WebChatMessage } from "@/lib/agents/chat-agent"
 
@@ -15,6 +15,38 @@ const LEAD_ID_KEY = "gaff_chat_lead_id"
 const CONTACT_KEY = "gaff_chat_contact"
 
 type Contact = { name: string; email: string }
+
+function renderMarkdown(text: string): React.ReactNode[] {
+  const SAFE_URL = /^https?:\/\//
+
+  return text.split("\n").flatMap((line, li, lines) => {
+    // Split line into segments: plain text | **bold** | [label](url)
+    const segments: React.ReactNode[] = []
+    const pattern = /(\*\*(.+?)\*\*|\[([^\]]+)\]\((https?:\/\/[^)]+)\))/g
+    let last = 0
+    let m: RegExpExecArray | null
+
+    while ((m = pattern.exec(line)) !== null) {
+      if (m.index > last) segments.push(line.slice(last, m.index))
+      if (m[2]) {
+        segments.push(<strong key={`b-${li}-${m.index}`}>{m[2]}</strong>)
+      } else if (m[3] && m[4] && SAFE_URL.test(m[4])) {
+        segments.push(
+          <a key={`a-${li}-${m.index}`} href={m[4]} target="_blank" rel="noopener noreferrer"
+            className="underline text-amber-400 hover:text-amber-300 break-all">
+            {m[3]}
+          </a>
+        )
+      }
+      last = m.index + m[0].length
+    }
+    if (last < line.length) segments.push(line.slice(last))
+
+    const result: React.ReactNode[] = [<span key={`ln-${li}`}>{segments}</span>]
+    if (li < lines.length - 1) result.push(<br key={`br-${li}`} />)
+    return result
+  })
+}
 
 function SendIcon() {
   return (
@@ -257,7 +289,7 @@ export function ChatWidget() {
                           : "bg-white/10 text-white/90"
                       }`}
                     >
-                      {m.content}
+                      {renderMarkdown(m.content)}
                     </div>
                   </div>
                 ))}

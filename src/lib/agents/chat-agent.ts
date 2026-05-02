@@ -60,6 +60,7 @@ async function checkAvailability(dateStr: string, boatCategory?: string) {
     date: dateStr,
     available: available.length > 0,
     boats: available.map((b) => ({
+      id: b.id,
       name: b.name,
       category: b.category,
       capacity: `Up to ${b.capacity} guests`,
@@ -388,6 +389,29 @@ const WEB_TOOLS = [
   {
     type: "function" as const,
     function: {
+      name: "create_booking",
+      description:
+        "Create a real booking reservation and return a Stripe checkout link so the customer can pay the deposit. Use this when the customer wants to confirm a trip and has provided all required details: date, boat category, trip type, guest count, first name, last name, email, and phone. Always call check_availability first to get the boat ID.",
+      parameters: {
+        type: "object",
+        properties: {
+          date: { type: "string", description: "Trip date YYYY-MM-DD" },
+          boatId: { type: "string", description: "Boat UUID from check_availability result" },
+          tripType: { type: "string", enum: ["half_day", "full_day"], description: "half_day or full_day" },
+          guestCount: { type: "number", description: "Number of guests" },
+          firstName: { type: "string" },
+          lastName: { type: "string" },
+          email: { type: "string" },
+          phone: { type: "string" },
+          specialRequests: { type: "string" },
+        },
+        required: ["date", "boatId", "tripType", "guestCount", "firstName", "lastName", "email", "phone"],
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
       name: "request_whatsapp_handoff",
       description:
         "Generate a WhatsApp link so the customer can continue the conversation there. Use when they ask to speak on WhatsApp, want to talk to a person, or prefer direct messaging.",
@@ -419,7 +443,8 @@ RESPONSE RULES:
 - Be warm, knowledgeable, and direct
 - For availability/pricing: use tools — never guess
 - For fish/season questions: call get_seasons_info and answer confidently
-- When ready to book: use get_booking_link
+- When customer wants to book: first call check_availability to get the boat ID, collect date/trip type/guest count/name/email/phone, then call create_booking to create the real reservation and return the Stripe checkout link
+- Use get_booking_link only if the customer just wants to browse — use create_booking when they're ready to pay
 - request_whatsapp_handoff only when customer explicitly asks to move to WhatsApp or talk to a person
 
 GAFF FLEET:
@@ -456,6 +481,30 @@ async function executeWebTool(
       return { result: JSON.stringify(getBookingLink(args.date, args.boat_category)) }
     case "get_seasons_info":
       return { result: JSON.stringify(getSeasonsInfo()) }
+    case "create_booking": {
+      try {
+        const res = await fetch(`${SITE_URL}/api/chat/reservation`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            date: args.date,
+            boatId: args.boatId,
+            tripType: args.tripType,
+            guestCount: Number(args.guestCount),
+            firstName: args.firstName,
+            lastName: args.lastName,
+            email: args.email,
+            phone: args.phone,
+            specialRequests: args.specialRequests || "",
+          }),
+        })
+        const data = (await res.json()) as { checkoutUrl?: string; error?: string }
+        if (!res.ok) return { result: JSON.stringify({ error: data.error ?? "Reservation failed" }) }
+        return { result: JSON.stringify({ success: true, checkoutUrl: data.checkoutUrl }) }
+      } catch (e) {
+        return { result: JSON.stringify({ error: e instanceof Error ? e.message : "Reservation error" }) }
+      }
+    }
     case "request_whatsapp_handoff": {
       const text = encodeURIComponent(
         args.summary || "Hi! I was chatting with GAFF on your website and I'm interested in booking a fishing trip."
