@@ -89,15 +89,25 @@ function getBookingLink(date?: string, boatCategory?: string) {
 }
 
 function getSeasonsInfo() {
+  const month = new Date().getMonth() + 1 // 1-12
+  const SEASONS: Record<string, { peak: number[]; peak_label: string; best: string }> = {
+    "Blue Marlin":        { peak: [6,7,8,9,10,11], peak_label: "Jun–Nov", best: "October" },
+    "Yellowfin Tuna":     { peak: [5,6,7,8,9,10,11,12], peak_label: "May–Dec", best: "Late summer" },
+    "Dorado (Mahi-Mahi)": { peak: [6,7,8,9,10], peak_label: "Jun–Oct", best: "July–September" },
+    "Wahoo":              { peak: [7,8,9,10,11], peak_label: "Jul–Nov", best: "All season" },
+    "Roosterfish":        { peak: [5,6,7,8], peak_label: "May–Aug", best: "Coastal inshore" },
+  }
+  const inSeason = Object.entries(SEASONS)
+    .filter(([, s]) => s.peak.includes(month))
+    .map(([name, s]) => ({ name, peak: s.peak_label, best: s.best }))
+  const offSeason = Object.entries(SEASONS)
+    .filter(([, s]) => !s.peak.includes(month))
+    .map(([name, s]) => ({ name, peak: s.peak_label }))
   return {
-    species: [
-      { name: "Blue Marlin", peak: "Jun–Nov", best: "October" },
-      { name: "Yellowfin Tuna", peak: "May–Dec", best: "Late summer" },
-      { name: "Dorado (Mahi-Mahi)", peak: "Jun–Oct", best: "July–September" },
-      { name: "Wahoo", peak: "Jul–Nov", best: "Fast bite all season" },
-      { name: "Roosterfish", peak: "May–Aug", best: "Coastal waters" },
-    ],
-    note: "Cabo has great fishing year-round. We can match your travel dates to the best bite window.",
+    currentMonth: month,
+    inSeasonNow: inSeason,
+    offSeasonNow: offSeason,
+    note: "Cabo has great fishing year-round — even off-peak species are catchable. These are peak windows only.",
   }
 }
 
@@ -159,7 +169,7 @@ const TOOLS = [
     type: "function" as const,
     function: {
       name: "get_seasons_info",
-      description: "Get fishing seasons and species information for Cabo San Lucas.",
+      description: "Get which fish species are in season RIGHT NOW and year-round fishing info for Cabo San Lucas. Use this for ANY question about fish, species, what's biting, what's in season, or fishing conditions.",
       parameters: { type: "object", properties: {}, required: [] },
     },
   },
@@ -168,7 +178,7 @@ const TOOLS = [
     function: {
       name: "escalate_to_human",
       description:
-        "Escalate to a human team member. Use when: customer wants to cancel or reschedule a paid booking, has an urgent complaint, or needs something beyond general booking info.",
+        "Escalate ONLY when: customer wants to cancel or reschedule a PAID booking, has a serious complaint about a past trip, or explicitly asks to speak with a person. Do NOT use for questions about fish, seasons, availability, pricing, or general booking info — answer those yourself.",
       parameters: {
         type: "object",
         properties: {
@@ -188,24 +198,33 @@ function buildSystemPrompt(leadName: string, todayDate: string) {
 Today's date: ${todayDate}
 Customer name: ${leadName}
 
-YOUR ROLE: Help US tourists plan and book their Cabo fishing charter. You can answer questions, check availability, share pricing, and send booking links.
+YOUR ROLE: Help US tourists plan and book their Cabo fishing charter. Answer questions about fish, seasons, availability, pricing, and send booking links.
 
 RESPONSE RULES:
 - Respond in the same language the customer writes in (English or Spanish)
 - Keep replies short — max 3-4 lines for WhatsApp
 - Be friendly, confident, and direct — not robotic
-- Always use tools before giving availability or pricing info (don't guess)
-- When the customer is ready to book, use get_booking_link to give them the direct link
-- Use escalate_to_human if they want to cancel a paid booking, have a complaint, or need urgent help
+- For availability or pricing: always call the tool first (don't guess)
+- For fish/season questions: call get_seasons_info and answer confidently from the result
+- When ready to book: use get_booking_link
+- escalate_to_human ONLY for paid booking cancellations, serious complaints, or explicit "I want a human" requests
 
-GAFF FLEET SUMMARY:
+GAFF FLEET:
 - Standard 26ft | 4 guests | from $550 half-day
 - Midsize 31ft | 6 guests | from $850 half-day
 - Large 38ft | 8 guests | from $1,250 half-day
 - Luxury 45ft | 10 guests | from $1,550 half-day
 
+FISHING SEASONS IN CABO (always answer from this knowledge — never say you can't verify it):
+- Blue Marlin: peak Jun–Nov, best in October
+- Yellowfin Tuna: peak May–Dec, best late summer
+- Dorado (Mahi-Mahi): peak Jun–Oct, best Jul–Sep
+- Wahoo: peak Jul–Nov, excellent speed bite
+- Roosterfish: peak May–Aug, coastal inshore
+- Cabo has GREAT fishing year-round — even off-peak species are catchable
+
 LOCATION: Cabo San Lucas marina, Baja California Sur, Mexico
-DEPARTURE: 6:30 AM (early option 5:30 AM available)
+DEPARTURE: 6:30 AM (early 5:30 AM available)
 INCLUDES: Captain, mate, tackle, fishing license, ice, water`
 }
 
@@ -392,21 +411,30 @@ function buildWebSystemPrompt(todayDate: string) {
 
 Today's date: ${todayDate}
 
-YOUR ROLE: Help US tourists plan and book their Cabo fishing charter via the website chat. You can answer questions, check live availability, share pricing, and send booking links.
+YOUR ROLE: Help US tourists plan and book their Cabo fishing charter. Answer questions about fish, seasons, availability, pricing, and send booking links.
 
 RESPONSE RULES:
 - Respond in the same language the customer writes in (English or Spanish)
 - Keep replies concise — 2-3 short lines max for chat
 - Be warm, knowledgeable, and direct
-- Always use tools for real-time availability and pricing — never guess
-- When the customer is ready to book, use get_booking_link to provide the direct link
-- If they want to continue on WhatsApp or talk to a person, use request_whatsapp_handoff
+- For availability/pricing: use tools — never guess
+- For fish/season questions: call get_seasons_info and answer confidently
+- When ready to book: use get_booking_link
+- request_whatsapp_handoff only when customer explicitly asks to move to WhatsApp or talk to a person
 
 GAFF FLEET:
 - Standard 26ft | 4 guests | from $550 half-day / $850 full-day
 - Midsize 31ft | 6 guests | from $850 half-day / $1,250 full-day
 - Large 38ft | 8 guests | from $1,250 half-day / $1,800 full-day
 - Luxury 45ft | 10 guests | from $1,550 half-day / $1,950 full-day
+
+FISHING SEASONS IN CABO (answer from this knowledge — never say you can't verify it):
+- Blue Marlin: peak Jun–Nov, best in October
+- Yellowfin Tuna: peak May–Dec, best late summer
+- Dorado (Mahi-Mahi): peak Jun–Oct, best Jul–Sep
+- Wahoo: peak Jul–Nov, excellent speed bite
+- Roosterfish: peak May–Aug, coastal inshore
+- Cabo has GREAT fishing year-round — even off-peak species are catchable
 
 DEPARTURE: 6:30 AM from Cabo San Lucas marina (early 5:30 AM option available)
 INCLUDES: Captain, mate, tackle, fishing license, ice, water`
