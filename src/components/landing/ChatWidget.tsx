@@ -17,35 +17,34 @@ const CONTACT_KEY = "gaff_chat_contact"
 type Contact = { name: string; email: string }
 
 function renderMarkdown(text: string): React.ReactNode[] {
-  const SAFE_URL = /^https?:\/\//
+  // Normalize markdown links split across lines: ]\n( → ](
+  const normalized = text.replace(/\]\s*\n\s*\(/g, "](")
 
-  return text.split("\n").flatMap((line, li, lines) => {
-    // Split line into segments: plain text | **bold** | [label](url)
-    const segments: React.ReactNode[] = []
-    const pattern = /(\*\*(.+?)\*\*|\[([^\]]+)\]\((https?:\/\/[^)]+)\))/g
-    let last = 0
-    let m: RegExpExecArray | null
+  const result: React.ReactNode[] = []
+  const pattern = /(\*\*(.+?)\*\*|\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)|\n)/g
+  let last = 0
+  let key = 0
+  let m: RegExpExecArray | null
 
-    while ((m = pattern.exec(line)) !== null) {
-      if (m.index > last) segments.push(line.slice(last, m.index))
-      if (m[2]) {
-        segments.push(<strong key={`b-${li}-${m.index}`}>{m[2]}</strong>)
-      } else if (m[3] && m[4] && SAFE_URL.test(m[4])) {
-        segments.push(
-          <a key={`a-${li}-${m.index}`} href={m[4]} target="_blank" rel="noopener noreferrer"
-            className="underline text-amber-400 hover:text-amber-300 break-all">
-            {m[3]}
-          </a>
-        )
-      }
-      last = m.index + m[0].length
+  while ((m = pattern.exec(normalized)) !== null) {
+    if (m.index > last) result.push(normalized.slice(last, m.index))
+
+    if (m[0] === "\n") {
+      result.push(<br key={key++} />)
+    } else if (m[2]) {
+      result.push(<strong key={key++}>{m[2]}</strong>)
+    } else if (m[3] && m[4]) {
+      result.push(
+        <a key={key++} href={m[4]} target="_blank" rel="noopener noreferrer"
+          className="underline text-amber-400 hover:text-amber-300 break-all">
+          {m[3]}
+        </a>
+      )
     }
-    if (last < line.length) segments.push(line.slice(last))
-
-    const result: React.ReactNode[] = [<span key={`ln-${li}`}>{segments}</span>]
-    if (li < lines.length - 1) result.push(<br key={`br-${li}`} />)
-    return result
-  })
+    last = m.index + m[0].length
+  }
+  if (last < normalized.length) result.push(normalized.slice(last))
+  return result
 }
 
 function SendIcon() {
