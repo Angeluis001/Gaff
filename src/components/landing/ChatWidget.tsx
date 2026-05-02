@@ -206,7 +206,7 @@ export function ChatWidget() {
               <p className="text-sm font-semibold text-white">GAFF Assistant</p>
               <p className="text-xs text-white/40">Boats · Availability · Pricing</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <a
                 href={handoffUrl ?? defaultHandoff}
                 target="_blank"
@@ -216,6 +216,30 @@ export function ChatWidget() {
                 <WhatsAppIcon />
                 WhatsApp
               </a>
+              {step === "chat" && (
+                <button
+                  type="button"
+                  title="New conversation"
+                  onClick={() => {
+                    setMessages([GREETING])
+                    setHandoffUrl(null)
+                    setLeadId(null)
+                    setContact({ name: "", email: "" })
+                    setStep("intro")
+                    try {
+                      localStorage.removeItem(STORAGE_KEY)
+                      localStorage.removeItem(LEAD_ID_KEY)
+                      localStorage.removeItem(CONTACT_KEY)
+                    } catch { /* ignore */ }
+                  }}
+                  className="text-white/30 transition hover:text-white/70"
+                  aria-label="New conversation"
+                >
+                  <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden>
+                    <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                  </svg>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -278,7 +302,7 @@ export function ChatWidget() {
           ) : (
             <>
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {messages.map((m, i) => (
                   <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div
