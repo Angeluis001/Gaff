@@ -504,8 +504,9 @@ export async function runWebChatAgent(
     })
 
     if (!response.ok) {
-      console.error(`[web-chat-agent] OpenAI error ${response.status}`)
-      return { reply: "I'm having trouble right now. Please try again or reach us on WhatsApp. 🎣" }
+      const errBody = await response.text().catch(() => "")
+      console.error(`[web-chat-agent] OpenAI error ${response.status}:`, errBody.slice(0, 300))
+      return { reply: `[DEBUG] OpenAI error ${response.status}: ${errBody.slice(0, 200)}` }
     }
 
     const payload = (await response.json()) as {
