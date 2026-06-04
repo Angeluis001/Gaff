@@ -112,17 +112,22 @@ export async function POST(request: Request) {
         const whatsappTo = lead.whatsappNumber ?? lead.phone
         console.log(`[webhook] whatsappTo=${whatsappTo} OPENCLAW_URL=${process.env.OPENCLAW_URL?.slice(0, 40)}`)
         if (whatsappTo && process.env.OPENCLAW_URL) {
+          const tripTypeLabel = tripType.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())
           const waMessage =
-            `✅ *GAFF All Fishing — Booking Confirmed!*\n\n` +
-            `Hi ${customerName},\n` +
-            `Your deposit has been received. Here are your trip details:\n\n` +
-            `🚤 *Boat:* ${booking.boatName}\n` +
-            `📅 *Date:* ${tripDate}\n` +
-            `⏱ *Trip:* ${tripType}\n` +
-            `👥 *Guests:* ${booking.guests}\n` +
-            `💰 *Deposit paid:* $${booking.depositAmount ?? "0.00"}\n\n` +
-            `We'll reach out 48 hours before your trip with final details.\n` +
-            `Questions? Reply to this message anytime. See you on the water! 🎣`
+            `🎣 *GAFF All Fishing Los Cabos*\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n` +
+            `✅ *Booking Confirmed!*\n\n` +
+            `Hi ${customerName}! Your deposit is in and your charter is locked. See you on the water!\n\n` +
+            `*Trip Details*\n` +
+            `🚤 Vessel: ${booking.boatName}\n` +
+            `📅 Date: ${tripDate}\n` +
+            `⏱ Type: ${tripTypeLabel}\n` +
+            `👥 Guests: ${booking.guests}\n` +
+            `💰 Deposit paid: $${booking.depositAmount ?? "0.00"}\n\n` +
+            `*Meeting Point*\n` +
+            `📍 Cabo San Lucas Marina\n` +
+            `🕡 Arrive by 6:15 AM · Departure 6:30 AM\n\n` +
+            `We'll message you 48 hrs before with final details. Questions? Just reply here! 👋`
           notifications.push(sendWhatsAppMessage(whatsappTo, waMessage))
         }
 
