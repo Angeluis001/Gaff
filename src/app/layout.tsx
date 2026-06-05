@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext"
 import {
   BUSINESS_ADDRESS,
   BUSINESS_COORDINATES,
+  CONTACT_EMAIL,
   CONTACT_PHONE,
   SITE_NAME,
   SITE_URL,
@@ -30,19 +31,24 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
     default: `${SITE_NAME} | Sport Fishing Charters in Cabo San Lucas`,
     template: `%s | ${SITE_NAME}`,
   },
   description:
-    "Book premium sport fishing charters in Cabo San Lucas with elite captains, luxury boats, real-time availability, and conservation-minded experiences.",
+    "Book premium sport fishing charters in Cabo San Lucas from $550. Half-day & full-day trips for marlin, yellowfin tuna, dorado & wahoo. Expert captains, real-time availability, instant online booking.",
   keywords: [
-    "cabo san lucas fishing",
+    "cabo san lucas fishing charter",
     "sport fishing los cabos",
-    "deep sea fishing cabo",
-    "cabo fishing charters",
+    "cabo fishing trips",
     "marlin fishing cabo san lucas",
-    "los cabos fishing boats",
+    "deep sea fishing cabo",
+    "cabo san lucas fishing boats",
+    "yellowfin tuna fishing cabo",
+    "dorado fishing cabo",
+    "los cabos fishing charter prices",
+    "cabo fishing half day full day",
   ],
   alternates: {
     canonical: SITE_URL,
@@ -58,7 +64,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: `${SITE_NAME} | Sport Fishing Charters in Cabo San Lucas`,
     description:
-      "Luxury charters, expert captains, and premium offshore experiences built for traveling anglers in Los Cabos.",
+      "Sport fishing charters from $550 in Cabo San Lucas. Marlin, tuna & dorado trips. Expert captains, instant online booking, real-time availability.",
     images: [
       {
         url: "/og-image.jpg",
@@ -75,6 +81,11 @@ export const metadata: Metadata = {
       "Discover premium GAFF offshore experiences, read-only live availability, and charter-ready planning in Los Cabos.",
     images: ["/og-image.jpg"],
   },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png" }],
+    shortcut: ["/icon.png"],
+  },
   robots: {
     index: true,
     follow: true,
@@ -84,16 +95,21 @@ export const metadata: Metadata = {
 const structuredData = [
   {
     "@context": "https://schema.org",
-    "@type": "TouristAttraction",
+    "@type": "LocalBusiness",
+    "@id": `${SITE_URL}/#business`,
     name: SITE_NAME,
-    description:
-      "Premier sport fishing charters in Cabo San Lucas with premium boats, experienced captains, and conservation-minded experiences.",
+    image: `${SITE_URL}/og-image.jpg`,
     url: SITE_URL,
+    telephone: CONTACT_PHONE,
+    email: CONTACT_EMAIL,
+    description:
+      "Premium sport fishing charters in Cabo San Lucas. Half-day and full-day trips for marlin, tuna, dorado, wahoo and roosterfish. Book online with instant confirmation.",
     address: {
       "@type": "PostalAddress",
       streetAddress: BUSINESS_ADDRESS,
       addressLocality: "Cabo San Lucas",
       addressRegion: "Baja California Sur",
+      postalCode: "23450",
       addressCountry: "MX",
     },
     geo: {
@@ -101,6 +117,16 @@ const structuredData = [
       latitude: BUSINESS_COORDINATES.latitude,
       longitude: BUSINESS_COORDINATES.longitude,
     },
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      opens: "06:00",
+      closes: "18:00",
+    },
+    priceRange: "$550–$3120",
+    currenciesAccepted: "USD",
+    paymentAccepted: "Credit Card, Debit Card",
+    areaServed: ["Cabo San Lucas", "Los Cabos", "Baja California Sur"],
     sameAs: [
       SOCIAL_LINKS.instagram,
       SOCIAL_LINKS.facebook,
@@ -108,27 +134,81 @@ const structuredData = [
       SOCIAL_LINKS.tripadvisor,
     ],
   },
+  // Charter packages — enables price display in Google search results
   {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: SITE_NAME,
+    "@type": "Product",
+    name: "Cabo San Lucas Sport Fishing Charter",
+    description:
+      "Sport fishing charters in Cabo San Lucas for marlin, yellowfin tuna, dorado and wahoo. Boats from 26 to 45 feet for groups of 2 to 10 guests.",
     image: `${SITE_URL}/og-image.jpg`,
-    url: SITE_URL,
-    telephone: CONTACT_PHONE,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: BUSINESS_ADDRESS,
-      addressLocality: "Cabo San Lucas",
-      addressRegion: "Baja California Sur",
-      addressCountry: "MX",
-    },
-    priceRange: "$$-$$$$",
-    areaServed: "Los Cabos",
-    sameAs: [
-      SOCIAL_LINKS.instagram,
-      SOCIAL_LINKS.facebook,
-      SOCIAL_LINKS.tiktok,
-      SOCIAL_LINKS.tripadvisor,
+    brand: { "@type": "Brand", name: SITE_NAME },
+    offers: [
+      {
+        "@type": "Offer",
+        name: "Standard 26ft — Half Day (up to 4 guests)",
+        price: "550",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/booking`,
+        validFrom: "2025-01-01",
+      },
+      {
+        "@type": "Offer",
+        name: "Standard 26ft — Full Day (up to 4 guests)",
+        price: "880",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/booking`,
+      },
+      {
+        "@type": "Offer",
+        name: "Midsize 31ft — Half Day (up to 6 guests)",
+        price: "850",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/booking`,
+      },
+      {
+        "@type": "Offer",
+        name: "Midsize 31ft — Full Day (up to 6 guests)",
+        price: "1360",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/booking`,
+      },
+      {
+        "@type": "Offer",
+        name: "Large 38ft — Half Day (up to 8 guests)",
+        price: "1250",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/booking`,
+      },
+      {
+        "@type": "Offer",
+        name: "Large 38ft — Full Day (up to 8 guests)",
+        price: "2000",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/booking`,
+      },
+      {
+        "@type": "Offer",
+        name: "Luxury 45ft — Half Day (up to 10 guests)",
+        price: "1950",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/booking`,
+      },
+      {
+        "@type": "Offer",
+        name: "Luxury 45ft — Full Day (up to 10 guests)",
+        price: "3120",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/booking`,
+      },
     ],
   },
 ]
