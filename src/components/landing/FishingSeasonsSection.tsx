@@ -140,15 +140,17 @@ export function FishingSeasonsSection() {
                       return (
                         <div key={i} className="flex flex-1 flex-col items-center gap-1">
                           <div
-                            className={`h-1.5 w-full rounded-full ${
-                              active
-                                ? isCurrent
-                                  ? "bg-gold shadow-[0_0_8px_rgba(212,168,67,0.6)]"
-                                  : `${style.activeBg} opacity-80`
-                                : isCurrent
-                                ? "border border-gold/30 bg-gold/10"
-                                : "bg-white/8"
-                            }`}
+                            className={
+                              active && isCurrent
+                                ? "animate-gold-glow h-3 w-full rounded-full bg-gold ring-1 ring-white/20"
+                                : `h-1.5 w-full rounded-full ${
+                                    active
+                                      ? `${style.activeBg} opacity-80`
+                                      : isCurrent
+                                      ? "border border-gold/30 bg-gold/10"
+                                      : "bg-white/8"
+                                  }`
+                            }
                           />
                           <span className={`text-[9px] ${isCurrent ? "text-gold" : "text-sand/28"}`}>
                             {label}
@@ -223,9 +225,7 @@ export function FishingSeasonsSection() {
                         const isCurrent = month === currentMonth
 
                         const pillClass = active
-                          ? isCurrent
-                            ? "bg-gold shadow-[0_0_16px_rgba(212,168,67,0.65)] cursor-pointer"
-                            : `${style.activeBg} ${style.glow} cursor-pointer`
+                          ? `${style.activeBg} ${style.glow} cursor-pointer`
                           : isCurrent
                           ? "border border-gold/30 bg-gold/8"
                           : "border border-white/8 bg-white/4"
@@ -235,23 +235,39 @@ export function FishingSeasonsSection() {
                             <TooltipTrigger
                               render={<div className="flex items-center justify-center" />}
                             >
-                              <motion.div
-                                className={`h-6 w-full rounded-full ${pillClass}`}
-                                initial={{ opacity: 0, scaleX: 0.3 }}
-                                whileInView={{ opacity: 1, scaleX: 1 }}
-                                viewport={{ once: true }}
-                                transition={{
-                                  delay: sIdx * 0.05 + mIdx * 0.03,
-                                  duration: 0.35,
-                                  ease: "easeOut",
-                                }}
-                                whileHover={
-                                  active
-                                    ? { scaleX: 1.08, scaleY: 1.22, y: -3 }
-                                    : { scaleY: 1.12 }
-                                }
-                                style={{ transformOrigin: "center" }}
-                              />
+                              {active && isCurrent ? (
+                                <motion.div
+                                  className="animate-gold-glow h-9 w-full cursor-pointer rounded-full bg-gold ring-1 ring-white/20"
+                                  initial={{ opacity: 0, scaleX: 0.3, scaleY: 0.5 }}
+                                  whileInView={{ opacity: 1, scaleX: 1, scaleY: 1 }}
+                                  viewport={{ once: true }}
+                                  transition={{
+                                    delay: sIdx * 0.05 + mIdx * 0.03,
+                                    duration: 0.35,
+                                    ease: "easeOut",
+                                  }}
+                                  whileHover={{ scaleX: 1.06, scaleY: 1.2, y: -4 }}
+                                  style={{ transformOrigin: "center" }}
+                                />
+                              ) : (
+                                <motion.div
+                                  className={`h-6 w-full rounded-full ${pillClass}`}
+                                  initial={{ opacity: 0, scaleX: 0.3 }}
+                                  whileInView={{ opacity: 1, scaleX: 1 }}
+                                  viewport={{ once: true }}
+                                  transition={{
+                                    delay: sIdx * 0.05 + mIdx * 0.03,
+                                    duration: 0.35,
+                                    ease: "easeOut",
+                                  }}
+                                  whileHover={
+                                    active
+                                      ? { scaleX: 1.08, scaleY: 1.22, y: -3 }
+                                      : { scaleY: 1.12 }
+                                  }
+                                  style={{ transformOrigin: "center" }}
+                                />
+                              )}
                             </TooltipTrigger>
                             <TooltipContent
                               side="top"

@@ -205,6 +205,33 @@
   }
 }
 
+/* ─── Gold glow pulse (fishing seasons active-now pill) ─────────────────── */
+@keyframes gold-glow-pulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(212,168,67,0.65), 0 0 0 1px rgba(212,168,67,0.25); }
+  50%       { box-shadow: 0 0 40px rgba(212,168,67,1),    0 0 0 3px rgba(212,168,67,0.55); }
+}
+.animate-gold-glow {
+  animation: gold-glow-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Connections graph animations ──────────────────────────────────────── */
+@keyframes node-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-7px); }
+}
+@keyframes node-glow-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+@keyframes panel-slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.connections-edge-path {
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.18));
+}
+
+/* ─── Calendar day types ─────────────────────────────────────────────────── */
 .rdp-day-available [data-slot="button"],
 .rdp-day-available button {
   background: rgb(98 182 203 / 14%);

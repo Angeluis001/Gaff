@@ -6,7 +6,7 @@ import { ArrowRight, Users } from "lucide-react"
 import { CldImage } from "next-cloudinary"
 import useEmblaCarousel from "embla-carousel-react"
 import Autoplay from "embla-carousel-autoplay"
-import { motion, type Variants } from "framer-motion"
+import { AnimatePresence, motion, type Variants } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -193,9 +193,13 @@ function FleetHeroCard({ boat, lang }: { boat: BoatCardData; lang: "en" | "es" }
 function FleetCard({
   boat,
   interactive = false,
+  onSelect,
+  lang = "en",
 }: {
   boat: BoatCardData
   interactive?: boolean
+  onSelect?: () => void
+  lang?: "en" | "es"
 }) {
   const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
   const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 })
@@ -215,10 +219,11 @@ function FleetCard({
       transition={interactive ? undefined : { duration: 0.55, ease: "easeOut" }}
       whileHover={
         interactive
-          ? { boxShadow: "0 24px 64px rgba(212,168,67,0.15)" }
+          ? { boxShadow: "0 24px 64px rgba(212,168,67,0.22), 0 0 0 1px rgba(212,168,67,0.28)" }
           : { y: -6, transition: { type: "spring" as const, stiffness: 280, damping: 18 } }
       }
-      className="h-full"
+      onClick={onSelect}
+      className={cn("h-full", onSelect && "cursor-pointer")}
       onMouseMove={(event) => {
         if (!interactive) {
           return
@@ -304,13 +309,24 @@ function FleetCard({
           </ul>
         </CardContent>
         <CardFooter className="border-t border-gold/12 bg-white/2 px-6 py-5">
-          <Button
-            render={<a href="#availability" />}
-            className="w-full rounded-full bg-gold text-sm font-semibold text-navy hover:bg-gold/90"
-          >
-            Book this boat
-            <ArrowRight className="size-4" />
-          </Button>
+          {onSelect ? (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onSelect() }}
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-gold/25 py-3 text-sm font-semibold text-sand/75 transition-all duration-200 hover:border-gold/50 hover:text-white"
+            >
+              {lang === "es" ? "Ver detalles" : "Explore this boat"}
+              <ArrowRight className="size-4" />
+            </button>
+          ) : (
+            <Button
+              render={<a href="#availability" />}
+              className="w-full rounded-full bg-gold text-sm font-semibold text-navy hover:bg-gold/90"
+            >
+              {lang === "es" ? "Reservar" : "Book this boat"}
+              <ArrowRight className="size-4" />
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </motion.div>
@@ -348,11 +364,10 @@ export function FleetSection({ boats }: { boats: FleetSectionBoat[] }) {
     }
   })
 
-  // Flagship gets the hero treatment on desktop
-  const heroBoat = fleetBoats.length > 0
-    ? (fleetBoats.find((b) => b.badgeLabel !== null) ?? fleetBoats[0])
-    : null
-  const gridBoats = heroBoat ? fleetBoats.filter((b) => b !== heroBoat) : fleetBoats
+  const defaultHeroName = (fleetBoats.find((b) => b.badgeLabel !== null) ?? fleetBoats[0])?.name ?? ""
+  const [selectedName, setSelectedName] = useState(defaultHeroName)
+  const heroBoat = fleetBoats.find((b) => b.name === selectedName) ?? fleetBoats[0] ?? null
+  const gridBoats = fleetBoats.filter((b) => b.name !== heroBoat?.name)
 
   const maxCapacity = boats.length > 0 ? Math.max(...boats.map((b) => b.capacity)) : 0
   const hasSeakeeper = fleetBoats.some((b) => b.badgeLabel !== null)
@@ -401,10 +416,22 @@ export function FleetSection({ boats }: { boats: FleetSectionBoat[] }) {
           </motion.div>
         )}
 
-        {/* Desktop: flagship hero + remaining grid */}
+        {/* Desktop: selected hero (animated) + clickable grid */}
         {fleetBoats.length > 0 && (
           <div className="hidden lg:block">
-            {heroBoat && <FleetHeroCard boat={heroBoat} lang={lang} />}
+            <AnimatePresence mode="wait">
+              {heroBoat && (
+                <motion.div
+                  key={heroBoat.name}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                >
+                  <FleetHeroCard boat={heroBoat} lang={lang} />
+                </motion.div>
+              )}
+            </AnimatePresence>
             {gridBoats.length > 0 && (
               <motion.div
                 className="mx-auto flex w-full justify-center gap-6 lg:grid lg:grid-cols-[repeat(auto-fit,minmax(17.5rem,20rem))]"
@@ -414,7 +441,13 @@ export function FleetSection({ boats }: { boats: FleetSectionBoat[] }) {
                 viewport={{ once: true, amount: 0.1 }}
               >
                 {gridBoats.map((boat) => (
-                  <FleetCard key={boat.name} boat={boat} interactive />
+                  <FleetCard
+                    key={boat.name}
+                    boat={boat}
+                    interactive
+                    lang={lang}
+                    onSelect={() => setSelectedName(boat.name)}
+                  />
                 ))}
               </motion.div>
             )}
