@@ -433,23 +433,28 @@ export function FleetSection({ boats }: { boats: FleetSectionBoat[] }) {
               )}
             </AnimatePresence>
             {gridBoats.length > 0 && (
-              <motion.div
-                className="mx-auto flex w-full justify-center gap-6 lg:grid lg:grid-cols-[repeat(auto-fit,minmax(17.5rem,20rem))]"
-                variants={gridVariants}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.1 }}
-              >
-                {gridBoats.map((boat) => (
-                  <FleetCard
-                    key={boat.name}
-                    boat={boat}
-                    interactive
-                    lang={lang}
-                    onSelect={() => setSelectedName(boat.name)}
-                  />
-                ))}
-              </motion.div>
+              <div className="mx-auto flex w-full justify-center gap-6 lg:grid lg:grid-cols-[repeat(auto-fit,minmax(17.5rem,20rem))]">
+                <AnimatePresence mode="popLayout">
+                  {gridBoats.map((boat, i) => (
+                    <motion.div
+                      key={boat.name}
+                      layout
+                      initial={{ opacity: 0, y: 36, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.38, delay: i * 0.06, ease: "easeOut" }}
+                      className="h-full"
+                    >
+                      <FleetCard
+                        boat={boat}
+                        interactive
+                        lang={lang}
+                        onSelect={() => setSelectedName(boat.name)}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
             )}
           </div>
         )}
