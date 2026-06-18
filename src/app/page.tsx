@@ -1,59 +1,65 @@
 import type { ComponentProps, ReactElement } from "react"
-import dynamic from "next/dynamic"
+import nextDynamic from "next/dynamic"
+import { db } from "@/lib/db"
+import { boats } from "@/lib/db/schema"
+import { getPublishedGalleryItems } from "@/lib/gallery"
 import { FleetSection } from "@/components/landing/FleetSection"
 import { HeroSection } from "@/components/landing/HeroSection"
 import { Navbar } from "@/components/landing/Navbar"
 
-const AvailabilityCalendarSection = dynamic(
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
+const AvailabilityCalendarSection = nextDynamic(
   () =>
     import("@/components/landing/AvailabilityCalendarSection").then(
       (module) => module.AvailabilityCalendarSection
     ),
   { loading: () => null }
 )
-const FishingSeasonsSection = dynamic(
+const FishingSeasonsSection = nextDynamic(
   () =>
     import("@/components/landing/FishingSeasonsSection").then(
       (module) => module.FishingSeasonsSection
     ),
   { loading: () => null }
 )
-const TestimonialsSection = dynamic(
+const TestimonialsSection = nextDynamic(
   () =>
     import("@/components/landing/TestimonialsSection").then(
       (module) => module.TestimonialsSection
     ),
   { loading: () => null }
 )
-const FAQSection = dynamic(
+const FAQSection = nextDynamic(
   () =>
     import("@/components/landing/FAQSection").then(
       (module) => module.FAQSection
     ),
   { loading: () => null }
 )
-const CrewSection = dynamic(
-  () =>
-    import("@/components/landing/CrewSection").then(
-      (module) => module.CrewSection
-    ),
-  { loading: () => null }
-)
-const ConservationSection = dynamic(
+const ConservationSection = nextDynamic(
   () =>
     import("@/components/landing/ConservationSection").then(
       (module) => module.ConservationSection
     ),
   { loading: () => null }
 )
-const CTASection = dynamic(
+const CTASection = nextDynamic(
   () =>
     import("@/components/landing/CTASection").then(
       (module) => module.CTASection
     ),
   { loading: () => null }
 )
-const Footer = dynamic(
+const GalleryTeaserSection = nextDynamic(
+  () =>
+    import("@/components/landing/GalleryTeaserSection").then(
+      (module) => module.GalleryTeaserSection
+    ),
+  { loading: () => null }
+)
+const Footer = nextDynamic(
   () => import("@/components/landing/Footer").then((module) => module.Footer),
   { loading: () => null }
 )
@@ -188,19 +194,44 @@ function PlaceholderCard({
 
 void PlaceholderCard
 
-export default function Home() {
+const CATEGORY_ORDER = ["standard", "midsize", "large", "luxury"] as const
+
+export default async function Home() {
+  const [boatRows, galleryItems] = await Promise.all([
+    db.select().from(boats),
+    getPublishedGalleryItems(),
+  ])
+
+  const fleetBoats = boatRows
+    .filter((boat) => boat.isActive !== false)
+    .sort((a, b) => {
+      const aIndex = CATEGORY_ORDER.indexOf(a.category as (typeof CATEGORY_ORDER)[number])
+      const bIndex = CATEGORY_ORDER.indexOf(b.category as (typeof CATEGORY_ORDER)[number])
+      return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex)
+    })
+    .map((boat) => ({
+      slug: boat.slug,
+      name: boat.name,
+      category: boat.category,
+      capacity: boat.capacity,
+      length: boat.length ?? null,
+      priceHalfDay: boat.priceHalfDay ?? null,
+      priceFullDay: boat.priceFullDay ?? null,
+      image: ((boat.images as string[] | null) ?? [])[0] ?? null,
+    }))
+
   return (
     <>
       <Navbar />
       <main className="landing-shell pb-16">
         <HeroSection />
-        <FleetSection />
+        <FleetSection boats={fleetBoats} />
 
         <AvailabilityCalendarSection />
         <FishingSeasonsSection />
         <TestimonialsSection />
         <FAQSection />
-        <CrewSection />
+        <GalleryTeaserSection items={galleryItems.filter((item) => item.featured || item.mediaType === "video")} />
         <ConservationSection />
         <CTASection />
         <Footer />
