@@ -45,6 +45,12 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     minimumRole: "manager",
   },
   {
+    href: "/admin/gallery",
+    label: "Gallery",
+    description: "Photos, videos, and publishing",
+    minimumRole: "manager",
+  },
+  {
     href: "/admin/agents",
     label: "Agents",
     description: "AI operations surfaces",
