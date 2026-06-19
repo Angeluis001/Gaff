@@ -1,8 +1,9 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useState } from "react"
-import { CldImage, CldUploadWidget } from "next-cloudinary"
-import { Loader2, Trash2, Upload } from "lucide-react"
+import { CldImage } from "next-cloudinary"
+import { Loader2, Plus, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -12,6 +13,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  extractCloudinaryPublicId,
+  isAbsoluteUrl,
+  normalizeCloudinaryImageValue,
+} from "@/lib/cloudinary"
 
 type BoatCategory = "standard" | "midsize" | "large" | "luxury"
 
@@ -44,7 +50,7 @@ const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 const fieldClass =
   "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
 
-const labelClass = "block text-xs font-semibold uppercase tracking-widest text-white/50 mb-1"
+const labelClass = "mb-1 block text-xs font-semibold uppercase tracking-widest text-white/50"
 
 export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
   const isEditing = Boolean(boat)
@@ -55,7 +61,7 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
   const [capacity, setCapacity] = useState("6")
   const [length, setLength] = useState("")
   const [description, setDescription] = useState("")
-  const [features, setFeatures] = useState("") // comma-separated
+  const [features, setFeatures] = useState("")
   const [priceHalfDay, setPriceHalfDay] = useState("")
   const [priceFullDay, setPriceFullDay] = useState("")
   const [captainName, setCaptainName] = useState("")
@@ -63,6 +69,7 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
   const [images, setImages] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [newImageId, setNewImageId] = useState("")
 
   useEffect(() => {
     if (boat) {
@@ -77,7 +84,7 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
       setPriceFullDay(boat.priceFullDay ?? "")
       setCaptainName(boat.captainName ?? "")
       setIsActive(boat.isActive)
-      setImages(boat.images ?? [])
+      setImages((boat.images ?? []).map((image) => normalizeCloudinaryImageValue(image, CLOUD_NAME)))
     } else {
       setName("")
       setSlug("")
@@ -92,6 +99,7 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
       setIsActive(true)
       setImages([])
     }
+    setNewImageId("")
     setError(null)
   }, [boat, open])
 
@@ -106,11 +114,29 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
     if (!isEditing) setSlug(autoSlug(value))
   }
 
-  const removeImage = (publicId: string) =>
+  const removeImage = (publicId: string) => {
     setImages((prev) => prev.filter((id) => id !== publicId))
+  }
+
+  const addImage = () => {
+    const normalizedValue = isAbsoluteUrl(newImageId)
+      ? newImageId.trim()
+      : extractCloudinaryPublicId(newImageId)
+    if (!normalizedValue) return
+
+    setImages((prev) => (prev.includes(normalizedValue) ? prev : [...prev, normalizedValue]))
+    setNewImageId("")
+  }
 
   const handleSave = async () => {
     setError(null)
+
+    const parsedCapacity = parseInt(capacity, 10)
+    if (!name.trim() || !slug.trim() || Number.isNaN(parsedCapacity) || parsedCapacity < 1) {
+      setError("Name, slug, and a valid capacity are required")
+      return
+    }
+
     setSaving(true)
 
     try {
@@ -118,12 +144,10 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
         name: name.trim(),
         slug: slug.trim(),
         category,
-        capacity: parseInt(capacity, 10),
+        capacity: parsedCapacity,
         length: length.trim() || null,
         description: description.trim() || null,
-        features: features
-          ? features.split(",").map((f) => f.trim()).filter(Boolean)
-          : null,
+        features: features ? features.split(",").map((f) => f.trim()).filter(Boolean) : null,
         images,
         priceHalfDay: priceHalfDay.trim() || null,
         priceFullDay: priceFullDay.trim() || null,
@@ -155,16 +179,16 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border border-white/10 bg-[#0a1628] text-white sm:max-w-2xl">
+    <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden border border-white/10 bg-[#0a1628] text-white sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-white">
-            {isEditing ? `Edit — ${boat?.name}` : "Add new boat"}
+            {isEditing ? `Edit - ${boat?.name}` : "Add new boat"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5 py-2">
-          {/* Basic info */}
+        <div className="min-h-0 flex-1 overflow-y-auto pr-2">
+          <div className="space-y-5 py-2">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className={labelClass}>Name *</label>
@@ -194,9 +218,9 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
                 value={category}
                 onChange={(e) => setCategory(e.target.value as BoatCategory)}
               >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c} className="bg-[#0a1628]">
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                {CATEGORIES.map((entry) => (
+                  <option key={entry} value={entry} className="bg-[#0a1628]">
+                    {entry.charAt(0).toUpperCase() + entry.slice(1)}
                   </option>
                 ))}
               </select>
@@ -223,7 +247,6 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
             </div>
           </div>
 
-          {/* Pricing */}
           <div className="rounded-xl border border-white/8 bg-white/3 p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/40">
               Pricing (USD)
@@ -250,14 +273,13 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
             </div>
           </div>
 
-          {/* Details */}
           <div>
             <label className={labelClass}>Captain name</label>
             <input
               className={fieldClass}
               value={captainName}
               onChange={(e) => setCaptainName(e.target.value)}
-              placeholder="Capitán Carlos"
+              placeholder="Captain Carlos"
             />
           </div>
 
@@ -268,7 +290,7 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description shown on the landing page…"
+              placeholder="Brief description shown on the landing page..."
             />
           </div>
 
@@ -282,7 +304,6 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
             />
           </div>
 
-          {/* Status */}
           <div className="flex items-center gap-3">
             <label className="relative inline-flex cursor-pointer items-center">
               <input
@@ -294,11 +315,10 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
               <div className="peer h-6 w-11 rounded-full bg-white/10 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-500 peer-checked:after:translate-x-full" />
             </label>
             <span className="text-sm text-white/70">
-              {isActive ? "Active — visible to customers" : "Inactive — hidden from booking"}
+              {isActive ? "Active - visible to customers" : "Inactive - hidden from booking"}
             </span>
           </div>
 
-          {/* Images */}
           <div className="rounded-xl border border-white/8 bg-white/3 p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-white/40">
               Images
@@ -306,18 +326,31 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
 
             {CLOUD_NAME && images.length > 0 && (
               <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {images.map((publicId) => (
-                  <div key={publicId} className="group relative aspect-square overflow-hidden rounded-lg">
-                    <CldImage
-                      src={publicId}
-                      alt="Boat image"
-                      fill
-                      className="object-cover"
-                      sizes="120px"
-                    />
+                {images.map((imageValue) => (
+                  <div
+                    key={imageValue}
+                    className="group relative aspect-square overflow-hidden rounded-lg"
+                  >
+                    {isAbsoluteUrl(imageValue) ? (
+                      <Image
+                        src={imageValue}
+                        alt="Boat image"
+                        fill
+                        className="object-cover"
+                        sizes="120px"
+                      />
+                    ) : (
+                      <CldImage
+                        src={imageValue}
+                        alt="Boat image"
+                        fill
+                        className="object-cover"
+                        sizes="120px"
+                      />
+                    )}
                     <button
                       type="button"
-                      onClick={() => removeImage(publicId)}
+                      onClick={() => removeImage(imageValue)}
                       className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100"
                     >
                       <Trash2 className="size-5 text-red-400" />
@@ -328,38 +361,33 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
             )}
 
             {CLOUD_NAME ? (
-              <CldUploadWidget
-                signatureEndpoint="/api/admin/cloudinary-signature"
-                options={{
-                  multiple: true,
-                  maxFiles: 10,
-                  resourceType: "image",
-                  clientAllowedFormats: ["jpg", "jpeg", "png", "webp"],
-                  maxFileSize: 8_000_000,
-                }}
-                onSuccess={(result) => {
-                  if (result.info && typeof result.info === "object" && "public_id" in result.info) {
-                    const publicId = (result.info as { public_id: string }).public_id
-                    setImages((prev) => [...prev, publicId])
-                  }
-                }}
-              >
-                {({ open }) => (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    className={fieldClass}
+                    value={newImageId}
+                    onChange={(e) => setNewImageId(e.target.value)}
+                    placeholder="Cloudinary public_id or full URL"
+                  />
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     className="rounded-lg border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-                    onClick={() => open()}
+                    onClick={addImage}
                   >
-                    <Upload className="size-4" />
-                    Upload images
+                    <Plus className="size-4" />
+                    Add image
                   </Button>
-                )}
-              </CldUploadWidget>
+                </div>
+                <p className="text-xs text-white/35">
+                  You can paste either the Cloudinary `public_id` or the full Cloudinary URL.
+                </p>
+              </div>
             ) : (
               <p className="text-xs text-white/30">
-                Cloudinary not configured — set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to enable uploads.
+                Cloudinary not configured - set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME to enable
+                uploads.
               </p>
             )}
           </div>
@@ -369,6 +397,7 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
               {error}
             </p>
           )}
+        </div>
         </div>
 
         <DialogFooter>

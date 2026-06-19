@@ -1,20 +1,18 @@
 "use client"
 
+import Image from "next/image"
 import { useState } from "react"
 import { CldImage } from "next-cloudinary"
-import {
-  Edit2,
-  ImageOff,
-  Loader2,
-  Plus,
-  Trash2,
-  Wrench,
-  X,
-} from "lucide-react"
+import { Edit2, ImageOff, Loader2, Plus, Trash2, Wrench, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  extractCloudinaryPublicId,
+  isAbsoluteUrl,
+  normalizeCloudinaryImageValue,
+} from "@/lib/cloudinary"
 import { BoatDialog, type BoatRow } from "./BoatDialog"
 import { MaintenanceDialog } from "./MaintenanceDialog"
 
@@ -83,8 +81,12 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
     if (!confirm("Delete this boat? This cannot be undone.")) return
     setDeletingBoat(id)
     try {
-      await fetch(`/api/admin/boats/${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/boats/${id}`, { method: "DELETE" })
+      if (!res.ok) {
+        throw new Error("Failed to delete boat")
+      }
       setBoats((prev) => prev.filter((b) => b.id !== id))
+      setMaintenance((prev) => prev.filter((m) => m.boatId !== id))
     } finally {
       setDeletingBoat(null)
     }
@@ -94,10 +96,7 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
     const res = await fetch(`/api/admin/boats/${boatId}/maintenance`)
     if (res.ok) {
       const rows = (await res.json()) as MaintenanceWindow[]
-      setMaintenance((prev) => [
-        ...prev.filter((m) => m.boatId !== boatId),
-        ...rows,
-      ])
+      setMaintenance((prev) => [...prev.filter((m) => m.boatId !== boatId), ...rows])
     }
     setMaintenanceDialog(null)
   }
@@ -105,9 +104,18 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
   const handleDeleteMaintenance = async (id: number) => {
     setDeletingMaint(id)
     const maint = maintenance.find((m) => m.id === id)
-    if (!maint) { setDeletingMaint(null); return }
+    if (!maint) {
+      setDeletingMaint(null)
+      return
+    }
+
     try {
-      await fetch(`/api/admin/boats/${maint.boatId}/maintenance/${id}`, { method: "DELETE" })
+      const res = await fetch(`/api/admin/boats/${maint.boatId}/maintenance/${id}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        throw new Error("Failed to delete maintenance window")
+      }
       setMaintenance((prev) => prev.filter((m) => m.id !== id))
     } finally {
       setDeletingMaint(null)
@@ -116,7 +124,6 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Header action */}
       <div className="flex justify-end">
         <Button
           type="button"
@@ -128,7 +135,6 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
         </Button>
       </div>
 
-      {/* Boats list */}
       <Card className="border-white/10 bg-white/5">
         <CardHeader>
           <CardTitle className="text-white">Boats ({boats.length})</CardTitle>
@@ -141,21 +147,33 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
               .slice()
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((boat) => (
-                <div
-                  key={boat.id}
-                  className="rounded-2xl border border-white/10 bg-black/10 p-4"
-                >
+                <div key={boat.id} className="rounded-2xl border border-white/10 bg-black/10 p-4">
                   <div className="flex gap-4">
-                    {/* Thumbnail */}
                     <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-xl bg-white/5">
-                      {CLOUD_NAME && boat.images?.[0] ? (
-                        <CldImage
-                          src={boat.images[0]}
-                          alt={boat.name}
-                          fill
-                          className="object-cover"
-                          sizes="112px"
-                        />
+                      {boat.images?.[0] ? (
+                        isAbsoluteUrl(normalizeCloudinaryImageValue(boat.images[0], CLOUD_NAME)) ? (
+                          <Image
+                            src={normalizeCloudinaryImageValue(boat.images[0], CLOUD_NAME)}
+                            alt={boat.name}
+                            fill
+                            className="object-cover"
+                            sizes="112px"
+                          />
+                        ) : CLOUD_NAME ? (
+                          <CldImage
+                            src={extractCloudinaryPublicId(
+                              normalizeCloudinaryImageValue(boat.images[0], CLOUD_NAME)
+                            )}
+                            alt={boat.name}
+                            fill
+                            className="object-cover"
+                            sizes="112px"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <ImageOff className="size-6 text-white/20" />
+                          </div>
+                        )
                       ) : (
                         <div className="flex h-full items-center justify-center">
                           <ImageOff className="size-6 text-white/20" />
@@ -163,12 +181,11 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
                       )}
                       {(boat.images?.length ?? 0) > 1 && (
                         <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1 py-0.5 text-[10px] text-white/70">
-                          +{boat.images!.length - 1}
+                          +{(boat.images?.length ?? 1) - 1}
                         </span>
                       )}
                     </div>
 
-                    {/* Info */}
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
@@ -187,12 +204,11 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
                           </div>
                           <p className="mt-0.5 text-xs text-white/45">
                             {boat.capacity} guests
-                            {boat.length ? ` · ${boat.length}` : ""}
-                            {boat.captainName ? ` · ${boat.captainName}` : ""}
+                            {boat.length ? ` | ${boat.length}` : ""}
+                            {boat.captainName ? ` | ${boat.captainName}` : ""}
                           </p>
                         </div>
 
-                        {/* Actions */}
                         <div className="flex gap-2">
                           <Button
                             type="button"
@@ -237,18 +253,17 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
                         </div>
                       </div>
 
-                      {/* Pricing */}
                       <div className="mt-2 flex flex-wrap gap-3 text-sm text-white/55">
                         <span>
                           Half day:{" "}
                           <span className="text-white/80">
-                            {boat.priceHalfDay ? `$${boat.priceHalfDay}` : "—"}
+                            {boat.priceHalfDay ? `$${boat.priceHalfDay}` : "-"}
                           </span>
                         </span>
                         <span>
                           Full day:{" "}
                           <span className="text-white/80">
-                            {boat.priceFullDay ? `$${boat.priceFullDay}` : "—"}
+                            {boat.priceFullDay ? `$${boat.priceFullDay}` : "-"}
                           </span>
                         </span>
                       </div>
@@ -260,7 +275,6 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
         </CardContent>
       </Card>
 
-      {/* Maintenance windows */}
       <Card className="border-white/10 bg-white/5">
         <CardHeader>
           <CardTitle className="text-white">
@@ -277,8 +291,7 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
               .slice()
               .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
               .map((maint) => {
-                const boatName =
-                  boats.find((b) => b.id === maint.boatId)?.name ?? "Unknown"
+                const boatName = boats.find((b) => b.id === maint.boatId)?.name ?? "Unknown"
                 return (
                   <div
                     key={maint.id}
@@ -288,7 +301,7 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
                       <span className="font-medium text-white">{boatName}</span>
                       <span className="ml-3 text-sm text-white/50">{formatDate(maint.date)}</span>
                       {maint.reason && maint.reason !== "maintenance" && (
-                        <span className="ml-2 text-sm text-white/40">— {maint.reason}</span>
+                        <span className="ml-2 text-sm text-white/40">- {maint.reason}</span>
                       )}
                     </div>
                     <button
@@ -311,13 +324,14 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
-      <BoatDialog
-        open={boatDialog.open}
-        boat={boatDialog.boat}
-        onClose={closeBoatDialog}
-        onSaved={handleBoatSaved}
-      />
+      {boatDialog.open && (
+        <BoatDialog
+          open={boatDialog.open}
+          boat={boatDialog.boat}
+          onClose={closeBoatDialog}
+          onSaved={handleBoatSaved}
+        />
+      )}
 
       {maintenanceDialog && (
         <MaintenanceDialog
