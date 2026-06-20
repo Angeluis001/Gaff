@@ -91,30 +91,30 @@ export function GalleryGrid({ items, onSelect }: Props) {
               </div>
             </div>
 
-            <div className="space-y-3 px-5 py-5">
-              <div>
-                <h3 className="font-heading text-3xl text-white">{item.title}</h3>
-                {item.caption ? <p className="mt-2 text-sm text-sand/68">{item.caption}</p> : null}
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {item.boatCategory ? (
-                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60">
-                    {item.boatCategory}
-                  </span>
+            {(item.caption || item.boatCategory || item.species || item.tags.length > 0) ? (
+              <div className="space-y-3 px-5 py-5">
+                {item.caption ? <p className="text-sm text-sand/68">{item.caption}</p> : null}
+                {(item.boatCategory || item.species || item.tags.length > 0) ? (
+                  <div className="flex flex-wrap gap-2">
+                    {item.boatCategory ? (
+                      <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60">
+                        {item.boatCategory}
+                      </span>
+                    ) : null}
+                    {item.species ? (
+                      <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60">
+                        {item.species}
+                      </span>
+                    ) : null}
+                    {item.tags.slice(0, 2).map((tag) => (
+                      <span key={tag} className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 ) : null}
-                {item.species ? (
-                  <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60">
-                    {item.species}
-                  </span>
-                ) : null}
-                {item.tags.slice(0, 2).map((tag) => (
-                  <span key={tag} className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60">
-                    {tag}
-                  </span>
-                ))}
               </div>
-            </div>
+            ) : null}
           </button>
         )
       })}

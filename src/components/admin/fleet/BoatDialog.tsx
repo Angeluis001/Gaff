@@ -2,7 +2,6 @@
 
 import Image from "next/image"
 import { useEffect, useState } from "react"
-import { CldImage } from "next-cloudinary"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -14,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
+  buildCloudinaryImageUrl,
   extractCloudinaryPublicId,
   isAbsoluteUrl,
   normalizeCloudinaryImageValue,
@@ -326,28 +326,24 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
 
             {CLOUD_NAME && images.length > 0 && (
               <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {images.map((imageValue) => (
+                {images.map((imageValue) => {
+                  const thumbUrl = isAbsoluteUrl(imageValue)
+                    ? imageValue
+                    : buildCloudinaryImageUrl(imageValue, CLOUD_NAME)
+                  return (
                   <div
                     key={imageValue}
                     className="group relative aspect-square overflow-hidden rounded-lg"
                   >
-                    {isAbsoluteUrl(imageValue) ? (
+                    {thumbUrl ? (
                       <Image
-                        src={imageValue}
+                        src={thumbUrl}
                         alt="Boat image"
                         fill
                         className="object-cover"
                         sizes="120px"
                       />
-                    ) : (
-                      <CldImage
-                        src={imageValue}
-                        alt="Boat image"
-                        fill
-                        className="object-cover"
-                        sizes="120px"
-                      />
-                    )}
+                    ) : null}
                     <button
                       type="button"
                       onClick={() => removeImage(imageValue)}
@@ -356,7 +352,8 @@ export function BoatDialog({ open, boat, onClose, onSaved }: Props) {
                       <Trash2 className="size-5 text-red-400" />
                     </button>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )}
 

@@ -2,14 +2,13 @@
 
 import Image from "next/image"
 import { useState } from "react"
-import { CldImage } from "next-cloudinary"
 import { Edit2, ImageOff, Loader2, Plus, Trash2, Wrench, X } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  extractCloudinaryPublicId,
+  buildCloudinaryImageUrl,
   isAbsoluteUrl,
   normalizeCloudinaryImageValue,
 } from "@/lib/cloudinary"
@@ -150,20 +149,18 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
                 <div key={boat.id} className="rounded-2xl border border-white/10 bg-black/10 p-4">
                   <div className="flex gap-4">
                     <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-xl bg-white/5">
-                      {boat.images?.[0] ? (
-                        isAbsoluteUrl(normalizeCloudinaryImageValue(boat.images[0], CLOUD_NAME)) ? (
+                      {(() => {
+                        const normalized = boat.images?.[0]
+                          ? normalizeCloudinaryImageValue(boat.images[0], CLOUD_NAME)
+                          : null
+                        const thumbUrl = normalized
+                          ? isAbsoluteUrl(normalized)
+                            ? normalized
+                            : buildCloudinaryImageUrl(normalized, CLOUD_NAME)
+                          : null
+                        return thumbUrl ? (
                           <Image
-                            src={normalizeCloudinaryImageValue(boat.images[0], CLOUD_NAME)}
-                            alt={boat.name}
-                            fill
-                            className="object-cover"
-                            sizes="112px"
-                          />
-                        ) : CLOUD_NAME ? (
-                          <CldImage
-                            src={extractCloudinaryPublicId(
-                              normalizeCloudinaryImageValue(boat.images[0], CLOUD_NAME)
-                            )}
+                            src={thumbUrl}
                             alt={boat.name}
                             fill
                             className="object-cover"
@@ -174,11 +171,7 @@ export function FleetManager({ initialBoats, initialMaintenance }: Props) {
                             <ImageOff className="size-6 text-white/20" />
                           </div>
                         )
-                      ) : (
-                        <div className="flex h-full items-center justify-center">
-                          <ImageOff className="size-6 text-white/20" />
-                        </div>
-                      )}
+                      })()}
                       {(boat.images?.length ?? 0) > 1 && (
                         <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1 py-0.5 text-[10px] text-white/70">
                           +{(boat.images?.length ?? 1) - 1}
