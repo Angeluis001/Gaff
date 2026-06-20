@@ -26,12 +26,21 @@ export async function sendWhatsAppMessage(to: string, message: string): Promise<
 
   const normalizedTo = normalizeWhatsAppNumber(to)
 
-  await fetch(`${baseUrl}/gaff/notify`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token ?? ""}`,
-    },
-    body: JSON.stringify({ to: normalizedTo, message }),
-  })
+  try {
+    const res = await fetch(`${baseUrl}/gaff/notify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token ?? ""}`,
+      },
+      body: JSON.stringify({ to: normalizedTo, message }),
+    })
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "")
+      console.error(`[whatsapp] /gaff/notify returned ${res.status}: ${body}`)
+    }
+  } catch (err) {
+    console.error("[whatsapp] Failed to deliver message via OpenClaw:", err)
+  }
 }

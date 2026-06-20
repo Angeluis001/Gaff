@@ -1,0 +1,25 @@
+# GAFF override — use with:
+#   docker-compose --env-file .env.docker -f docker-compose.yml -f docker-compose.gaff.yml up -d
+#
+# Adds:
+#  - GAFF-specific env vars (webhook URL, secret, OpenAI key)
+#  - cloudflared tunnel sidecar (prints public HTTPS URL to logs on startup)
+#  - restart: unless-stopped on all services
+
+services:
+  openclaw-gateway:
+    restart: unless-stopped
+    environment:
+      GAFF_WEBHOOK_URL: https://www.gaffallfishingloscabos.com/api/channels/openclaw
+      OPENCLAW_WEBHOOK_SECRET: 0d0207266dd1514c4fc73ad7288d48a7c9094e4630ea29bf9c4975f5dee0e4af
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+  # Cloudflare Quick Tunnel — no account needed, free HTTPS URL on *.trycloudflare.com
+  # URL appears in logs ~10s after startup. Copy it and update OPENCLAW_URL in Vercel.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://openclaw-gateway:18789
+    depends_on:
+      openclaw-gateway:
+        condition: service_healthy

@@ -1,7 +1,7 @@
 {
   gateway: {
     mode: "local",
-    port: 8080,
+    port: 18789,
     bind: "lan",
     auth: {
       mode: "token",
@@ -10,7 +10,7 @@
     controlUi: {
       enabled: true,
       basePath: "/openclaw",
-      allowedOrigins: ["https://openclaw-production-cb33.up.railway.app"],
+      allowedOrigins: ["https://openclaw-production-cb33.up.railway.app", "https://www.gaffallfishingloscabos.com"],
     },
   },
   plugins: {
@@ -20,6 +20,9 @@
     entries: {
       "gaff-assistant": {
         enabled: true,
+        config: {
+          siteUrl: "https://www.gaffallfishingloscabos.com",
+        },
       },
       whatsapp: {
         enabled: true,
