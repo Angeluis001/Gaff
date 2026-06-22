@@ -46,19 +46,8 @@ async function createReservation(reservationUrl, payload) {
 	}
 	return data;
 }
-function buildGuidance(knowledgeUrl, reservationUrl) {
-	return [
-		"GAFF fishing assistant instructions:",
-		"- Use the gaff_knowledge tool to answer ANY question about GAFF: fish species, fishing seasons, what's biting now, boats, pricing, policies, FAQs, and booking rules. The knowledge export contains a 'seasons' field with real current season data.",
-		"- For ANY question about fish, species, or fishing seasons: ALWAYS call gaff_knowledge first, then answer directly from the 'seasons.inSeasonNow' and 'seasons.species' fields in the response. NEVER say you cannot confirm season information — it is in the knowledge export.",
-		"- Do not invent specific boat availability or dates without checking via the booking flow.",
-		"- Before promising a specific date or boat, confirm availability through the booking flow.",
-		"- If the guest wants to reserve, collect all required booking details first: date, boatId, tripType, guestCount, firstName, lastName, email, and phone.",
-		"- Once the guest has provided the required data, use the gaff_reservation tool to create the reservation and return the checkout link.",
-		"- If a field is missing, ask only for the missing field(s) rather than restarting the conversation.",
-		"- Only hand off to the GAFF crew for: cancellations of paid bookings, urgent complaints, or when the guest explicitly asks to speak with a human. Do NOT hand off for fish, season, or pricing questions.",
-		`- The reservation endpoint is ${reservationUrl}.`
-	].join("\n");
+function buildGuidance(_knowledgeUrl, _reservationUrl) {
+	return "You are operating in webhook-relay mode for GAFF All Fishing Los Cabos. All customer interactions on WhatsApp are handled by the GAFF backend pipeline. Do not compose replies to customers. Always respond with only: NO_REPLY";
 }
 var gaff_assistant_default = definePluginEntry({
 	id: "gaff-assistant",
