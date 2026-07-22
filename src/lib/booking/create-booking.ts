@@ -27,6 +27,12 @@ export async function createPendingBooking(
     throw new Error("Selected boat could not be found.")
   }
 
+  if (payload.guestCount > selectedBoat.capacity) {
+    throw new Error(
+      `Guest count exceeds boat capacity (${selectedBoat.capacity} guests max).`
+    )
+  }
+
   await ensureBoatDayAvailable(payload.boatId, payload.date)
 
   const totalPrice = getBoatPrice(selectedBoat, payload.tripType)
@@ -117,6 +123,12 @@ export async function getPendingBookingForCheckout(bookingId: string) {
       specialRequests: bookings.specialRequests,
       boatName: boats.name,
       boatImage: boats.images,
+      stripeProductHalfDayId: boats.stripeProductHalfDayId,
+      stripeProductFullDayId: boats.stripeProductFullDayId,
+      stripePriceHalfDayId: boats.stripePriceHalfDayId,
+      stripePriceFullDayId: boats.stripePriceFullDayId,
+      stripeDepositPriceHalfDayId: boats.stripeDepositPriceHalfDayId,
+      stripeDepositPriceFullDayId: boats.stripeDepositPriceFullDayId,
     })
     .from(bookings)
     .innerJoin(boats, eq(bookings.boatId, boats.id))

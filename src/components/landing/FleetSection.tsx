@@ -30,6 +30,7 @@ type FleetSectionBoat = {
 }
 
 type BoatCardData = {
+  slug: string
   name: string
   tagline: string
   capacityLabel: string
@@ -178,7 +179,7 @@ function FleetHeroCard({ boat, lang }: { boat: BoatCardData; lang: "en" | "es" }
           </ul>
 
           <Button
-            render={<a href="#availability" />}
+            render={<a href={`/booking?boat=${encodeURIComponent(boat.slug)}`} />}
             className="w-full rounded-full bg-gold text-sm font-semibold text-navy hover:bg-gold/90"
           >
             {lang === "es" ? "Reservar este barco" : "Book this boat"}
@@ -320,7 +321,7 @@ function FleetCard({
             </button>
           ) : (
             <Button
-              render={<a href="#availability" />}
+              render={<a href={`/booking?boat=${encodeURIComponent(boat.slug)}`} />}
               className="w-full rounded-full bg-gold text-sm font-semibold text-navy hover:bg-gold/90"
             >
               {lang === "es" ? "Reservar" : "Book this boat"}
@@ -353,6 +354,7 @@ export function FleetSection({ boats }: { boats: FleetSectionBoat[] }) {
       messages.fleet.boats[0]
 
     return {
+      slug: boat.slug,
       name: boat.name,
       tagline: translation.tagline,
       features: translation.features,
@@ -407,8 +409,8 @@ export function FleetSection({ boats }: { boats: FleetSectionBoat[] }) {
                 key={label}
                 className="rounded-[1.25rem] border border-gold/10 bg-white/3 px-4 py-3 text-center"
               >
-                <p className="font-heading text-2xl text-white">{value}</p>
-                <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.22em] text-sand/48">
+                <p className="font-heading text-2xl text-foreground">{value}</p>
+                <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   {label}
                 </p>
               </div>

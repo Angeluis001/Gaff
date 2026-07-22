@@ -7,14 +7,6 @@ import { ArrowRight, CalendarSync, LoaderCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { useLanguage } from "@/contexts/LanguageContext"
 import type { BoatCategory } from "@/lib/landing-data"
 import type {
@@ -56,7 +48,6 @@ export function AvailabilityCalendarSection() {
   const [loading, setLoading] = useState(true)
   const [selectedBoat, setSelectedBoat] = useState<BoatCategory | "all">("all")
   const [selectedDate, setSelectedDate] = useState<Date | undefined>()
-  const [dialogOpen, setDialogOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -176,11 +167,6 @@ export function AvailabilityCalendarSection() {
     [statusMap]
   )
 
-  const activeBoat =
-    selectedBoat === "all"
-      ? "All boats"
-      : payload?.boats.find((boat) => boat.slug === selectedBoat)?.name ?? "Boat"
-
   const handleDayClick = (day: Date) => {
     const dateKey = format(day, "yyyy-MM-dd")
     const status = statusMap.get(dateKey)
@@ -229,7 +215,7 @@ export function AvailabilityCalendarSection() {
           </Button>
         </div>
 
-        <div className="glass-panel overflow-hidden rounded-[2rem] border border-gold/10 p-6 sm:p-8">
+        <div className="availability-shell glass-panel overflow-hidden rounded-[2rem] border border-gold/10 p-6 sm:p-8">
           <div className="mb-6 flex flex-wrap gap-3">
             {messages.availability.filters.map((label) => {
               const key = label.toLowerCase()
@@ -333,9 +319,25 @@ export function AvailabilityCalendarSection() {
                       <Button
                         type="button"
                         className="w-full rounded-full bg-gold text-navy hover:bg-gold/90"
-                        onClick={() => setDialogOpen(true)}
+                        onClick={() => {
+                          if (!selectedDate) {
+                            return
+                          }
+
+                          const query = new URLSearchParams({
+                            date: format(selectedDate, "yyyy-MM-dd"),
+                          })
+
+                          if (selectedBoatForDate) {
+                            query.set("boat", selectedBoatForDate.slug)
+                          } else if (selectedBoat !== "all") {
+                            query.set("boat", selectedBoat)
+                          }
+
+                          router.push(`/booking?${query.toString()}`)
+                        }}
                       >
-                        Reserve this date
+                        {messages.availability.modalCta}
                         <ArrowRight className="size-4" />
                       </Button>
                     </>
@@ -393,71 +395,6 @@ export function AvailabilityCalendarSection() {
           </div>
         </div>
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="border border-gold/12 bg-navy text-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-3xl text-white">
-              {selectedDate ? format(selectedDate, "MMMM d, yyyy") : "Confirm your trip"}
-            </DialogTitle>
-            <DialogDescription className="text-sand/72">
-              You&apos;re one step away from securing your Los Cabos fishing charter.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 rounded-[1.5rem] border border-gold/10 bg-white/3 p-5 text-sm leading-7 text-sand/76">
-            <p>
-              <span className="font-semibold text-white">Boat:</span>{" "}
-              {selectedBoatForDate?.name ?? activeBoat}
-            </p>
-            {selectedBoatForDate && (
-              <p>
-                <span className="font-semibold text-white">Capacity:</span>{" "}
-                Up to {selectedBoatForDate.capacity} guests
-              </p>
-            )}
-            {selectedBoatForDate?.priceFullDay && (
-              <p>
-                <span className="font-semibold text-white">Full day from:</span>{" "}
-                ${selectedBoatForDate.priceFullDay}
-              </p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              render={<a href="#faq" />}
-              variant="outline"
-              className="rounded-full border-gold/20 bg-white/4 text-white hover:bg-white/8"
-            >
-              Have a question?
-            </Button>
-            <Button
-              type="button"
-              className="rounded-full bg-gold text-navy hover:bg-gold/90"
-              onClick={() => {
-                if (!selectedDate) {
-                  setDialogOpen(false)
-                  return
-                }
-
-                const query = new URLSearchParams({
-                  date: format(selectedDate, "yyyy-MM-dd"),
-                })
-
-                if (selectedBoatForDate) {
-                  query.set("boat", selectedBoatForDate.slug)
-                } else if (selectedBoat !== "all") {
-                  query.set("boat", selectedBoat)
-                }
-
-                setDialogOpen(false)
-                router.push(`/booking?${query.toString()}`)
-              }}
-            >
-              {messages.availability.modalCta}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </section>
   )
 }
