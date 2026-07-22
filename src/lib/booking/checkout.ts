@@ -9,6 +9,12 @@ export type PendingCheckoutBooking = {
   guests: number
   depositAmount: string | number | null
   boatName: string
+  stripeProductHalfDayId?: string | null
+  stripeProductFullDayId?: string | null
+  stripePriceHalfDayId?: string | null
+  stripePriceFullDayId?: string | null
+  stripeDepositPriceHalfDayId?: string | null
+  stripeDepositPriceFullDayId?: string | null
 }
 
 export function getCheckoutSiteUrl(request: Request) {
@@ -31,24 +37,49 @@ export async function createBookingCheckoutSession(
   siteUrl: string
 ) {
   const stripe = getStripeServerClient()
+  const depositPriceId =
+    booking.tripType === "half_day"
+      ? booking.stripeDepositPriceHalfDayId
+      : booking.tripType === "full_day"
+        ? booking.stripeDepositPriceFullDayId
+        : null
+  const stripeProductId =
+    booking.tripType === "half_day"
+      ? booking.stripeProductHalfDayId
+      : booking.tripType === "full_day"
+        ? booking.stripeProductFullDayId
+        : null
+  const unitAmount = Math.round(Number(booking.depositAmount ?? "0") * 100)
+  const lineItem = depositPriceId
+    ? {
+        quantity: 1,
+        price: depositPriceId,
+      }
+    : {
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          ...(stripeProductId
+            ? {
+                product: stripeProductId,
+              }
+            : {
+                product_data: {
+                  name: `${booking.boatName} - ${booking.tripType.replace("_", " ")} trip`,
+                  description: `${booking.guests} guests on ${booking.date
+                    .toISOString()
+                    .slice(0, 10)}`,
+                },
+              }),
+          unit_amount: unitAmount,
+        },
+      }
 
   return stripe.checkout.sessions.create({
     mode: "payment",
     success_url: `${siteUrl}/booking/confirmation?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteUrl}/booking?bookingId=${booking.id}&cancelled=true`,
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: `${booking.boatName} - ${booking.tripType.replace("_", " ")} trip`,
-            description: `${booking.guests} guests on ${booking.date.toISOString().slice(0, 10)}`,
-          },
-          unit_amount: Math.round(Number(booking.depositAmount ?? "0") * 100),
-        },
-      },
-    ],
+    line_items: [lineItem],
     metadata: {
       bookingId: booking.id,
       leadId: booking.leadId ?? "",

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { ArrowRight, Menu } from "lucide-react"
 import { motion } from "framer-motion"
@@ -27,8 +28,11 @@ const navigationAnchors = [
 ] as const
 
 export function Navbar() {
+  const pathname = usePathname()
   const { lang, setLang, messages } = useLanguage()
   const [scrolled, setScrolled] = useState(false)
+  const isHomePage = pathname === "/"
+  const primaryCtaHref = isHomePage ? "#availability" : "/booking"
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,7 +72,7 @@ export function Navbar() {
             {navigationAnchors.map((item) => (
               <a
                 key={item.href}
-                href={item.href}
+                href={isHomePage ? item.href : `/${item.href}`}
                 className="text-sm font-medium text-sand/82 hover:text-white"
               >
                 {messages.nav.links[item.key]}
@@ -103,7 +107,7 @@ export function Navbar() {
               </button>
             </div>
             <Button
-              render={<a href="#availability" />}
+              render={<a href={primaryCtaHref} />}
               size="lg"
               className="rounded-full bg-gold px-5 text-sm font-semibold text-navy hover:bg-gold/90"
             >
@@ -129,9 +133,7 @@ export function Navbar() {
               className="border-l border-gold/14 bg-navy/96 px-0 text-white"
             >
               <SheetHeader className="border-b border-gold/12 px-6 pb-6">
-                <SheetTitle className="font-heading text-3xl text-white">
-                  GAFF
-                </SheetTitle>
+                <SheetTitle className="font-heading text-3xl text-white">GAFF</SheetTitle>
                 <SheetDescription className="text-sand/65">
                   {messages.nav.languageLabel}
                 </SheetDescription>
@@ -163,18 +165,21 @@ export function Navbar() {
                   {navigationAnchors.map((item) => (
                     <a
                       key={item.href}
-                      href={item.href}
+                      href={isHomePage ? item.href : `/${item.href}`}
                       className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white"
                     >
                       {messages.nav.links[item.key]}
                     </a>
                   ))}
-                  <Link href="/blog" className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white">
+                  <Link
+                    href="/blog"
+                    className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white"
+                  >
                     {messages.nav.links.blog}
                   </Link>
                 </div>
                 <Button
-                  render={<a href="#availability" />}
+                  render={<a href={primaryCtaHref} />}
                   size="lg"
                   className="mt-6 w-full rounded-full bg-gold text-sm font-semibold text-navy hover:bg-gold/90"
                 >

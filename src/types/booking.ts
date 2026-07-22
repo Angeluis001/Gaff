@@ -51,8 +51,17 @@ export interface BookingBoatOption {
   name: string
   category: BoatCategory
   capacity: number
+  length?: string | null
+  description?: string | null
+  image?: string | null
   priceHalfDay?: string | null
   priceFullDay?: string | null
+  stripeProductHalfDayId?: string | null
+  stripeProductFullDayId?: string | null
+  stripePriceHalfDayId?: string | null
+  stripePriceFullDayId?: string | null
+  stripeDepositPriceHalfDayId?: string | null
+  stripeDepositPriceFullDayId?: string | null
 }
 
 export interface BookingAvailabilityEntry {

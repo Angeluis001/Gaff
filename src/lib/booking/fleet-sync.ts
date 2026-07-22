@@ -62,7 +62,16 @@ export async function getSellableBoats(): Promise<BookingBoatOption[]> {
     name: boat.name,
     category: boat.category,
     capacity: boat.capacity,
+    length: boat.length,
+    description: boat.description,
+    image: Array.isArray(boat.images) ? boat.images[0] ?? null : null,
     priceHalfDay: boat.priceHalfDay,
     priceFullDay: boat.priceFullDay,
+    stripeProductHalfDayId: boat.stripeProductHalfDayId,
+    stripeProductFullDayId: boat.stripeProductFullDayId,
+    stripePriceHalfDayId: boat.stripePriceHalfDayId,
+    stripePriceFullDayId: boat.stripePriceFullDayId,
+    stripeDepositPriceHalfDayId: boat.stripeDepositPriceHalfDayId,
+    stripeDepositPriceFullDayId: boat.stripeDepositPriceFullDayId,
   }))
 }

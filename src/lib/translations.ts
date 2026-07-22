@@ -53,6 +53,7 @@ export type LandingTranslationMap = {
     brand: string
     links: {
       fleet: string
+      gallery: string
       availability: string
       seasons: string
       faq: string
@@ -139,6 +140,58 @@ export type LandingTranslationMap = {
     privacy: string
     terms: string
   }
+  booking: {
+    eyebrow: string
+    title: string
+    subtitle: string
+    steps: {
+      trip: string
+      boat: string
+      details: string
+    }
+    stepOf: string
+    dateLabel: string
+    guestsLabel: string
+    tripTypeLabel: string
+    tripTypes: {
+      half_day: string
+      full_day: string
+      overnight: string
+    }
+    tripTypeHints: {
+      half_day: string
+      full_day: string
+      overnight: string
+    }
+    calendarLegend: {
+      available: string
+      limited: string
+      booked: string
+    }
+    continue: string
+    back: string
+    chooseBoat: string
+    noBoats: string
+    capacityLabel: string
+    guests: string
+    selectedBoat: string
+    selectedDate: string
+    totalLabel: string
+    depositLabel: string
+    balanceLabel: string
+    depositNote: string
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    specialRequests: string
+    specialRequestsPlaceholder: string
+    summaryTitle: string
+    payCta: string
+    payingCta: string
+    loading: string
+    trustLine: string
+  }
 }
 
 export const translations: Record<Language, LandingTranslationMap> = {
@@ -147,6 +200,7 @@ export const translations: Record<Language, LandingTranslationMap> = {
       brand: "GAFF All Fishing",
       links: {
         fleet: "Fleet",
+        gallery: "Gallery",
         availability: "Availability",
         seasons: "Seasons",
         faq: "FAQ",
@@ -204,7 +258,12 @@ export const translations: Record<Language, LandingTranslationMap> = {
           priceFrom: "From $1,250",
           length: "38 ft",
           cloudinaryPublicId: "gaff/landing/fleet-large",
-          features: ["Full-day range", "Premium tackle", "Tournament-ready deck"],
+          features: [
+            "Lunch included",
+            "Soft drinks included",
+            "Bait and ice included",
+            "Fishing licenses not included",
+          ],
         },
         {
           name: "Luxury",
@@ -213,7 +272,12 @@ export const translations: Record<Language, LandingTranslationMap> = {
           priceFrom: "From $1,950",
           length: "45 ft",
           cloudinaryPublicId: "gaff/landing/fleet-luxury",
-          features: ["Salon lounge", "Private head", "VIP hospitality service"],
+          features: [
+            "Lunch included",
+            "Soft drinks included",
+            "Bait and ice included",
+            "Fishing licenses not included",
+          ],
         },
       ],
     },
@@ -317,12 +381,68 @@ export const translations: Record<Language, LandingTranslationMap> = {
       privacy: "Privacy Policy",
       terms: "Terms of Service",
     },
+    booking: {
+      eyebrow: "Book your charter",
+      title: "Reserve your fishing trip",
+      subtitle:
+        "Choose your date, pick the right boat, and secure your spot with a 50% deposit online.",
+      steps: {
+        trip: "Trip",
+        boat: "Boat",
+        details: "Details",
+      },
+      stepOf: "Step {current} of {total}",
+      dateLabel: "Trip date",
+      guestsLabel: "Guests",
+      tripTypeLabel: "Trip length",
+      tripTypes: {
+        half_day: "Half day",
+        full_day: "Full day",
+        overnight: "Overnight",
+      },
+      tripTypeHints: {
+        half_day: "About 6–8 hours on the water",
+        full_day: "Full day offshore action",
+        overnight: "Extended multi-day experience",
+      },
+      calendarLegend: {
+        available: "Available",
+        limited: "Limited",
+        booked: "Unavailable",
+      },
+      continue: "Continue",
+      back: "Back",
+      chooseBoat: "Choose your boat",
+      noBoats:
+        "No boats available for this date and group size. Try another date or fewer guests.",
+      capacityLabel: "Up to {count} guests",
+      guests: "guests",
+      selectedBoat: "Boat",
+      selectedDate: "Date",
+      totalLabel: "Trip total",
+      depositLabel: "Deposit due now (50%)",
+      balanceLabel: "Balance due day of trip",
+      depositNote:
+        "Your card is charged only the deposit. Balance is paid in Cabo before departure.",
+      firstName: "First name",
+      lastName: "Last name",
+      email: "Email",
+      phone: "Phone / WhatsApp",
+      specialRequests: "Special requests",
+      specialRequestsPlaceholder: "Celebrations, experience level, target species…",
+      summaryTitle: "Your trip summary",
+      payCta: "Pay 50% deposit & reserve",
+      payingCta: "Redirecting to secure checkout…",
+      loading: "Loading live availability…",
+      trustLine: "Secure payment via Stripe · Instant confirmation · Expert crew",
+    },
   },
   es: {
     nav: {
       brand: "GAFF All Fishing",
       links: {
         fleet: "Flota",
+        gallery: "Galería",
         availability: "Disponibilidad",
         seasons: "Temporadas",
         faq: "FAQ",
@@ -492,6 +612,61 @@ export const translations: Record<Language, LandingTranslationMap> = {
       socialTitle: "Social",
       privacy: "Aviso de Privacidad",
       terms: "Terminos de Servicio",
+    },
+    booking: {
+      eyebrow: "Reserva tu charter",
+      title: "Reserva tu viaje de pesca",
+      subtitle:
+        "Elige la fecha, escoge el barco ideal y asegura tu lugar con un depósito del 50% en línea.",
+      steps: {
+        trip: "Viaje",
+        boat: "Barco",
+        details: "Datos",
+      },
+      stepOf: "Paso {current} de {total}",
+      dateLabel: "Fecha del viaje",
+      guestsLabel: "Invitados",
+      tripTypeLabel: "Duración",
+      tripTypes: {
+        half_day: "Medio día",
+        full_day: "Día completo",
+        overnight: "Pernocta",
+      },
+      tripTypeHints: {
+        half_day: "Aprox. 6–8 horas en el agua",
+        full_day: "Día completo offshore",
+        overnight: "Experiencia extendida de varios días",
+      },
+      calendarLegend: {
+        available: "Disponible",
+        limited: "Limitado",
+        booked: "No disponible",
+      },
+      continue: "Continuar",
+      back: "Atrás",
+      chooseBoat: "Elige tu barco",
+      noBoats:
+        "No hay barcos disponibles para esta fecha y tamaño de grupo. Prueba otra fecha o menos invitados.",
+      capacityLabel: "Hasta {count} personas",
+      guests: "invitados",
+      selectedBoat: "Barco",
+      selectedDate: "Fecha",
+      totalLabel: "Total del viaje",
+      depositLabel: "Depósito ahora (50%)",
+      balanceLabel: "Saldo el día del viaje",
+      depositNote:
+        "Solo se cobra el depósito. El saldo se paga en Cabo antes de zarpar.",
+      firstName: "Nombre",
+      lastName: "Apellido",
+      email: "Correo",
+      phone: "Teléfono / WhatsApp",
+      specialRequests: "Solicitudes especiales",
+      specialRequestsPlaceholder: "Celebraciones, experiencia, especies objetivo…",
+      summaryTitle: "Resumen de tu viaje",
+      payCta: "Pagar depósito 50% y reservar",
+      payingCta: "Redirigiendo al pago seguro…",
+      loading: "Cargando disponibilidad en vivo…",
+      trustLine: "Pago seguro con Stripe · Confirmación instantánea · Tripulación experta",
     },
   },
 }
