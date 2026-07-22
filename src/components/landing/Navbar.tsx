@@ -6,7 +6,6 @@ import { useEffect, useState } from "react"
 import { ArrowRight, Menu } from "lucide-react"
 import { motion } from "framer-motion"
 
-import { BrandLogo } from "@/components/branding/BrandLogo"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -21,10 +20,10 @@ import { cn } from "@/lib/utils"
 
 const navigationAnchors = [
   { href: "#fleet", key: "fleet" },
-  { href: "/gallery", key: "gallery", external: true },
   { href: "#availability", key: "availability" },
   { href: "#seasons", key: "seasons" },
   { href: "#faq", key: "faq" },
+  { href: "#crew", key: "crew" },
   { href: "#conservation", key: "conservation" },
 ] as const
 
@@ -33,6 +32,7 @@ export function Navbar() {
   const { lang, setLang, messages } = useLanguage()
   const [scrolled, setScrolled] = useState(false)
   const isHomePage = pathname === "/"
+  const primaryCtaHref = isHomePage ? "#availability" : "/booking"
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,8 +53,7 @@ export function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={cn(
-        "public-navbar public-theme-scope fixed inset-x-0 top-0 z-50 transition-all duration-500",
-        isHomePage && "home-hero-navbar",
+        "fixed inset-x-0 top-0 z-50 transition-all duration-500",
         scrolled
           ? "border-b border-gold/12 bg-navy/80 backdrop-blur-xl"
           : "bg-transparent"
@@ -62,36 +61,22 @@ export function Navbar() {
     >
       <div className="landing-grid">
         <div className="flex h-20 items-center justify-between gap-4">
-          <Link href="/" className="text-white">
-            <BrandLogo
-              title="GAFF"
-              subtitle={messages.nav.brand}
-              priority
-              markContainerClassName="h-11 w-11 sm:h-12 sm:w-12"
-              titleClassName="text-[1.7rem] text-white sm:text-3xl"
-              subtitleClassName="text-[0.6rem] uppercase tracking-[0.34em] text-sand/60 sm:text-[0.68rem] sm:tracking-[0.36em]"
-            />
+          <Link href="/" className="flex flex-col leading-none text-white">
+            <span className="font-heading text-3xl tracking-[0.08em]">GAFF</span>
+            <span className="text-[0.68rem] uppercase tracking-[0.36em] text-sand/60">
+              {messages.nav.brand}
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex">
             {navigationAnchors.map((item) => (
-              "external" in item && item.external ? (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-sm font-medium text-sand/82 hover:text-white"
-                >
-                  {messages.nav.links[item.key]}
-                </Link>
-              ) : (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="text-sm font-medium text-sand/82 hover:text-white"
-                >
-                  {messages.nav.links[item.key]}
-                </a>
-              )
+              <a
+                key={item.href}
+                href={isHomePage ? item.href : `/${item.href}`}
+                className="text-sm font-medium text-sand/82 hover:text-white"
+              >
+                {messages.nav.links[item.key]}
+              </a>
             ))}
             <Link href="/blog" className="text-sm font-medium text-sand/82 hover:text-white">
               {messages.nav.links.blog}
@@ -122,9 +107,9 @@ export function Navbar() {
               </button>
             </div>
             <Button
-              render={<a href={isHomePage ? "#availability" : "/booking"} />}
+              render={<a href={primaryCtaHref} />}
               size="lg"
-              className="animate-book-now-pulse rounded-full bg-gold px-6 text-base font-bold text-navy shadow-[0_14px_30px_rgba(212,168,67,0.24)] hover:bg-gold/90"
+              className="rounded-full bg-gold px-5 text-sm font-semibold text-navy hover:bg-gold/90"
             >
               {messages.nav.primaryCta}
               <ArrowRight className="size-4" />
@@ -145,18 +130,10 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="public-theme-scope border-l border-gold/14 bg-navy/96 px-0 text-white"
+              className="border-l border-gold/14 bg-navy/96 px-0 text-white"
             >
               <SheetHeader className="border-b border-gold/12 px-6 pb-6">
-                <SheetTitle className="text-white">
-                  <BrandLogo
-                    title="GAFF"
-                    subtitle={messages.nav.brand}
-                    markContainerClassName="h-10 w-10"
-                    titleClassName="text-2xl text-white"
-                    subtitleClassName="text-[0.58rem] uppercase tracking-[0.28em] text-sand/60"
-                  />
-                </SheetTitle>
+                <SheetTitle className="font-heading text-3xl text-white">GAFF</SheetTitle>
                 <SheetDescription className="text-sand/65">
                   {messages.nav.languageLabel}
                 </SheetDescription>
@@ -186,32 +163,25 @@ export function Navbar() {
                 </div>
                 <div className="flex flex-col gap-1">
                   {navigationAnchors.map((item) => (
-                    "external" in item && item.external ? (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white"
-                      >
-                        {messages.nav.links[item.key]}
-                      </Link>
-                    ) : (
-                      <a
-                        key={item.href}
-                        href={item.href}
-                        className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white"
-                      >
-                        {messages.nav.links[item.key]}
-                      </a>
-                    )
+                    <a
+                      key={item.href}
+                      href={isHomePage ? item.href : `/${item.href}`}
+                      className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white"
+                    >
+                      {messages.nav.links[item.key]}
+                    </a>
                   ))}
-                  <Link href="/blog" className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white">
+                  <Link
+                    href="/blog"
+                    className="rounded-2xl px-4 py-3 text-sm font-medium text-sand/84 hover:bg-white/6 hover:text-white"
+                  >
                     {messages.nav.links.blog}
                   </Link>
                 </div>
                 <Button
-                  render={<a href={isHomePage ? "#availability" : "/booking"} />}
+                  render={<a href={primaryCtaHref} />}
                   size="lg"
-                  className="animate-book-now-pulse mt-6 min-h-14 w-full rounded-full bg-gold text-base font-bold text-navy shadow-[0_14px_30px_rgba(212,168,67,0.24)] hover:bg-gold/90"
+                  className="mt-6 w-full rounded-full bg-gold text-sm font-semibold text-navy hover:bg-gold/90"
                 >
                   {messages.nav.primaryCta}
                   <ArrowRight className="size-4" />
