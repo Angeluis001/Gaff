@@ -205,7 +205,14 @@ export function BookingForm({ initialDate, initialBoat }: BookingFormProps) {
     }
   }, [form.tripType, selectedBoat])
 
-  const tripOptions: TripType[] = ["half_day", "full_day", "overnight"]
+  const tripOptions = ["half_day", "full_day"] as const
+
+  function tripTypeLabel(tripType: TripType) {
+    if (tripType === "half_day" || tripType === "full_day") {
+      return t.tripTypes[tripType]
+    }
+    return tripType.replace("_", " ")
+  }
 
   const stepLabels = [t.steps.trip, t.steps.boat, t.steps.details]
 
@@ -475,7 +482,7 @@ export function BookingForm({ initialDate, initialBoat }: BookingFormProps) {
                     </p>
                     <p className="mt-2 text-sm text-sand/62">
                       {formatDisplayDate(form.date, lang)} · {form.guestCount} {t.guests} ·{" "}
-                      {t.tripTypes[form.tripType]}
+                      {tripTypeLabel(form.tripType)}
                     </p>
                   </div>
                 </div>
@@ -637,7 +644,7 @@ export function BookingForm({ initialDate, initialBoat }: BookingFormProps) {
                 <div className="flex justify-between gap-4">
                   <dt className="text-sand/60">{t.tripTypeLabel}</dt>
                   <dd className="text-right font-medium text-white">
-                    {t.tripTypes[form.tripType]}
+                    {tripTypeLabel(form.tripType)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4">

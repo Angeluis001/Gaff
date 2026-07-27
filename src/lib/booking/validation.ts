@@ -26,8 +26,8 @@ export function validateBookingFormData(input: BookingFormData) {
     throw new Error("A boat selection is required.")
   }
 
-  if (!["half_day", "full_day", "overnight"].includes(input.tripType)) {
-    throw new Error("Trip type is invalid.")
+  if (!["half_day", "full_day"].includes(input.tripType)) {
+    throw new Error("Trip type must be half day or full day.")
   }
 
   if (!Number.isInteger(input.guestCount) || input.guestCount < 1 || input.guestCount > 12) {

@@ -25,9 +25,8 @@ const STATUSES = [
 
 const TRIP_TYPES = [
   { value: "", label: "All trip types" },
-  { value: "half_day", label: "Half day" },
-  { value: "full_day", label: "Full day" },
-  { value: "overnight", label: "Overnight" },
+  { value: "half_day", label: "Half day (5–6 hrs)" },
+  { value: "full_day", label: "Full day (8 hrs)" },
 ]
 
 const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "info" | "neutral"> = {
@@ -42,9 +41,9 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "info" | "n
 }
 
 const TRIP_LABEL: Record<string, string> = {
-  half_day: "Half day",
-  full_day: "Full day",
-  overnight: "Overnight",
+  half_day: "Half day (5–6 hrs)",
+  full_day: "Full day (8 hrs)",
+  overnight: "Overnight (legacy)",
 }
 
 const CATEGORY_COLOR: Record<string, string> = {

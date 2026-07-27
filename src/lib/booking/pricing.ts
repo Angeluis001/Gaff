@@ -23,8 +23,8 @@ export function getBoatPrice(boat: BookingBoatOption, tripType: TripType) {
     return fullDayPrice
   }
 
-  if (tripType === "overnight" && fullDayPrice) {
-    return fullDayPrice * 1.8
+  if (tripType === "overnight") {
+    throw new Error("Overnight trips are not available for online booking.")
   }
 
   if (fullDayPrice) {

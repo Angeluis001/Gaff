@@ -156,12 +156,10 @@ export type LandingTranslationMap = {
     tripTypes: {
       half_day: string
       full_day: string
-      overnight: string
     }
     tripTypeHints: {
       half_day: string
       full_day: string
-      overnight: string
     }
     calendarLegend: {
       available: string
@@ -398,12 +396,10 @@ export const translations: Record<Language, LandingTranslationMap> = {
       tripTypes: {
         half_day: "Half day",
         full_day: "Full day",
-        overnight: "Overnight",
       },
       tripTypeHints: {
-        half_day: "About 6–8 hours on the water",
-        full_day: "Full day offshore action",
-        overnight: "Extended multi-day experience",
+        half_day: "5–6 hours on the water",
+        full_day: "8 hours on the water",
       },
       calendarLegend: {
         available: "Available",
@@ -630,12 +626,10 @@ export const translations: Record<Language, LandingTranslationMap> = {
       tripTypes: {
         half_day: "Medio día",
         full_day: "Día completo",
-        overnight: "Pernocta",
       },
       tripTypeHints: {
-        half_day: "Aprox. 6–8 horas en el agua",
-        full_day: "Día completo offshore",
-        overnight: "Experiencia extendida de varios días",
+        half_day: "5–6 horas en el agua",
+        full_day: "8 horas en el agua",
       },
       calendarLegend: {
         available: "Disponible",
